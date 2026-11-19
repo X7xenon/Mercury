@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercury — Studio Authentication</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080D;
+      --card-bg: rgba(13, 14, 21, 0.85);
+      --border: rgba(139, 108, 255, 0.2);
+      --border-focus: rgba(139, 108, 255, 0.6);
+      --accent: #8B6CFF;
+      --accent-glow: rgba(139, 108, 255, 0.35);
+      --neon-lime: #C6FF3D;
+      --danger: #FF4D6D;
+      --text: #F1F4F9;
+      --text-muted: #8E9BAE;
+      --font-display: 'Cabinet Grotesk', -apple-system, sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 20%, rgba(139, 108, 255, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(198, 255, 61, 0.05) 0%, transparent 50%);
+    }
+
+    /* Ambient cyber grid */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 32px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(139, 108, 255, 0.1);
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .brand-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 28px;
+      letter-spacing: 1px;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 14px var(--accent);
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+
+    .security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 4px 10px;
+      background: rgba(198, 255, 61, 0.08);
+      border: 1px solid rgba(198, 255, 61, 0.25);
+      border-radius: 100px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--neon-lime);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--neon-lime);
+      box-shadow: 0 0 8px var(--neon-lime);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(7, 8, 13, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #8B6CFF 0%, #6842FF 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      color: #FFFFFF;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(139, 108, 255, 0.35);
+      margin-top: 8px;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(139, 108, 255, 0.5);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .alert-box {
+      display: none;
+      background: rgba(255, 77, 109, 0.1);
+      border: 1px solid rgba(255, 77, 109, 0.35);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      color: #FF8BA0;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      line-height: 1.4;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-card">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <div class="brand-dot"></div>
+          MERCURY
+        </div>
+        <div class="brand-subtitle">Autonomous Meta Growth Studio</div>
+        <div class="security-badge">
+          <div class="badge-dot"></div>
+          Restricted Operator Portal
+        </div>
+      </div>
+
+      <div id="alertBox" class="alert-box"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="username">Operator ID / Username</label>
+          <div class="input-wrapper">
+            <input type="text" id="username" class="form-input" placeholder="theabeerkumar" required autocomplete="username" autofocus>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Access Key / Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-submit">Authenticate</button>
+      </form>
+
+      <div class="footer-note">
+        Protected by SHA-256 HMAC session tokens.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const alertBox = document.getElementById('alertBox');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertBox.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Verifying...';
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      try {
+        const resp = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await resp.json();
+
+        if (resp.ok && data.status === 'authenticated') {
+          submitBtn.innerText = 'Access Granted...';
+          submitBtn.style.background = 'linear-gradient(135deg, #C6FF3D 0%, #9BCF27 100%)';
+          submitBtn.style.color = '#000000';
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 300);
+        } else {
+          alertBox.innerText = data.detail || 'Access denied: Invalid operator credentials.';
+          alertBox.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Authenticate';
+        }
+      } catch (err) {
+        alertBox.innerText = 'Network exception: Unable to reach authentication server.';
+        alertBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Authenticate';
+      }
+    });
+  </script>
+</body>
+</html>

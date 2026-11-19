@@ -25,6 +25,7 @@ import meta_api
 import bot_engine
 import database
 import poll_engine
+import auth
 
 app = FastAPI(title="Mercury Meta Automation Engine", version="2.0.0")
 
@@ -80,7 +81,7 @@ _polling_thread.start()
 
 
 # -------------------------------------------------------------
-# DASHBOARD UI ROUTES
+# DASHBOARD UI & AUTHENTICATION ROUTES
 # -------------------------------------------------------------
 
 @app.get("/favicon.ico")
@@ -88,14 +89,57 @@ async def favicon():
     return Response(content=b"", media_type="image/x-icon", status_code=204)
 
 
+@app.post("/api/auth/login")
+async def login(payload: dict = Body(...)):
+    username = payload.get("username", "")
+    password = payload.get("password", "")
+    if not auth.verify_credentials(username, password):
+        raise HTTPException(status_code=401, detail="Access denied: Invalid operator credentials")
+
+    token = auth.create_session_token(username)
+    resp = JSONResponse(content={"status": "authenticated", "user": username})
+    resp.set_cookie(
+        key=auth.COOKIE_NAME,
+        value=token,
+        max_age=auth.SESSION_DURATION_SECONDS,
+        httponly=True,
+        samesite="lax",
+        secure=True if os.getenv("VERCEL") else False,
+        path="/"
+    )
+    return resp
+
+
+@app.post("/api/auth/logout")
+def logout():
+    resp = JSONResponse(content={"status": "logged_out"})
+    resp.delete_cookie(key=auth.COOKIE_NAME, path="/")
+    return resp
+
+
+@app.get("/api/auth/me")
+def get_current_operator(request: Request):
+    if not auth.is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthenticated")
+    return {"authenticated": True, "username": os.getenv("DASHBOARD_USERNAME", "theabeerkumar")}
+
+
 @app.get("/", response_class=HTMLResponse)
 @app.get("/dashboard", response_class=HTMLResponse)
-async def serve_dashboard():
-    for p in [BASE_DIR / "static" / "dashboard.html", BASE_DIR / "dashboard.html"]:
+async def serve_dashboard(request: Request):
+    if auth.is_authenticated(request):
+        for p in [BASE_DIR / "static" / "dashboard.html", BASE_DIR / "dashboard.html"]:
+            if p.exists():
+                with open(p, "r", encoding="utf-8") as f:
+                    return HTMLResponse(content=f.read(), status_code=200)
+        return HTMLResponse(content="<h1>Mercury Dashboard Loading...</h1>", status_code=200)
+
+    # Operator not authenticated: serve login page
+    for p in [BASE_DIR / "static" / "login.html", BASE_DIR / "login.html"]:
         if p.exists():
             with open(p, "r", encoding="utf-8") as f:
                 return HTMLResponse(content=f.read(), status_code=200)
-    return HTMLResponse(content="<h1>Mercury Dashboard Loading...</h1>", status_code=200)
+    return HTMLResponse(content="<h1>Mercury Authentication Portal Loading...</h1>", status_code=401)
 
 
 # -------------------------------------------------------------
@@ -120,8 +164,9 @@ def get_system_status():
 
 
 @app.get("/api/analytics")
-def get_analytics():
+def get_analytics(request: Request):
     """Returns deep performance metrics for DMs and Comment Replies."""
+    auth.require_auth(request)
     summary = database.get_analytics_summary()
     summary["brand"] = "Mercury"
     summary["engine_status"] = "Active & Polling"
@@ -133,7 +178,8 @@ def get_analytics():
 
 
 @app.get("/api/replier/status")
-def get_replier_status():
+def get_replier_status(request: Request):
+    auth.require_auth(request)
     return {
         "active": REPLIER_ACTIVE,
         "last_scan_at": LAST_SCAN_AT or "Starting...",
@@ -145,7 +191,8 @@ def get_replier_status():
 
 
 @app.post("/api/replier/toggle")
-def toggle_replier_status():
+def toggle_replier_status(request: Request):
+    auth.require_auth(request)
     global REPLIER_ACTIVE
     REPLIER_ACTIVE = not REPLIER_ACTIVE
     return {
@@ -159,11 +206,12 @@ def toggle_replier_status():
 # -------------------------------------------------------------
 
 @app.get("/api/videos")
-def get_videos_with_automation():
+def get_videos_with_automation(request: Request):
     """
     Fetches user's Instagram reels/videos from Meta Graph API
     and merges them with configured automations from SQLite DB.
     """
+    auth.require_auth(request)
     try:
         remote_media = meta_api.get_recent_media(limit=30)
     except Exception as e:
@@ -210,6 +258,23 @@ def get_videos_with_automation():
         })
         seen_ids.add(mid)
 
+    # 3. Add any other configured automations from DB not already in top 30
+    for mid, auto in automations.items():
+        if mid not in seen_ids and auto.get("is_active"):
+            items.append({
+                "id": mid,
+                "caption": auto.get("caption") or "",
+                "permalink": auto.get("permalink") or "",
+                "thumbnail_url": auto.get("thumbnail_url") or "",
+                "media_url": "",
+                "comments_count": 0,
+                "media_type": "VIDEO",
+                "timestamp": auto.get("created_at"),
+                "is_upcoming": False,
+                "automation": auto
+            })
+            seen_ids.add(mid)
+
     return {
         "count": len(items),
         "active_automations_count": sum(1 for i in items if i.get("automation") and i["automation"].get("is_active")),
@@ -218,7 +283,8 @@ def get_videos_with_automation():
 
 
 @app.post("/api/videos/automation")
-async def set_video_automation(payload: dict = Body(...)):
+async def set_video_automation(request: Request, payload: dict = Body(...)):
+    auth.require_auth(request)
     """
     Sets or updates custom automation rules for a specific video or upcoming video.
     """
@@ -264,13 +330,15 @@ async def set_video_automation(payload: dict = Body(...)):
 
 
 @app.delete("/api/videos/automation/{media_id}")
-def delete_video_automation_by_path(media_id: str):
+def delete_video_automation_by_path(media_id: str, request: Request):
+    auth.require_auth(request)
     success = database.delete_video_automation(media_id)
     return {"status": "deleted" if success else "not_found", "media_id": media_id}
 
 
 @app.delete("/api/videos/automation")
-def delete_video_automation_by_query(media_id: str = Query(...)):
+def delete_video_automation_by_query(request: Request, media_id: str = Query(...)):
+    auth.require_auth(request)
     success = database.delete_video_automation(media_id)
     return {"status": "deleted" if success else "not_found", "media_id": media_id}
 
@@ -280,7 +348,8 @@ def delete_video_automation_by_query(media_id: str = Query(...)):
 # -------------------------------------------------------------
 
 @app.get("/api/comments")
-def get_comments(limit: int = 50, search: str = None):
+def get_comments(request: Request, limit: int = 50, search: str = None):
+    auth.require_auth(request)
     comments = database.get_recent_processed_comments(limit=limit, search=search)
     return {
         "count": len(comments),
@@ -289,7 +358,8 @@ def get_comments(limit: int = 50, search: str = None):
 
 
 @app.delete("/api/comments/{comment_id}")
-def delete_comment(comment_id: str):
+def delete_comment(comment_id: str, request: Request):
+    auth.require_auth(request)
     success = database.delete_processed_comment(comment_id)
     return {"status": "deleted" if success else "not_found", "comment_id": comment_id}
 
@@ -299,12 +369,14 @@ def delete_comment(comment_id: str):
 # -------------------------------------------------------------
 
 @app.get("/api/triggers")
-def get_triggers():
+def get_triggers(request: Request):
+    auth.require_auth(request)
     return bot_engine.load_triggers()
 
 
 @app.post("/api/triggers")
-async def save_triggers(payload: dict = Body(...)):
+async def save_triggers(request: Request, payload: dict = Body(...)):
+    auth.require_auth(request)
     triggers_file = bot_engine.TRIGGERS_FILE
     with open(triggers_file, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
@@ -330,7 +402,8 @@ def cron_poll():
 # -------------------------------------------------------------
 
 @app.post("/api/test-trigger")
-async def test_trigger(payload: dict = Body(...)):
+async def test_trigger(request: Request, payload: dict = Body(...)):
+    auth.require_auth(request)
     comment_text = payload.get("comment_text", "")
     media_id = payload.get("media_id", "")
     username = payload.get("username", "creative_builder")
@@ -402,7 +475,8 @@ async def test_trigger(payload: dict = Body(...)):
 
 
 @app.post("/api/scan")
-def trigger_manual_scan():
+def trigger_manual_scan(request: Request):
+    auth.require_auth(request)
     """Runs an immediate scan across recent reels for new comments."""
     new_found = poll_engine.scan_recent_comments(limit_media=15, dry_run=False)
     return {
