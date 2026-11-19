@@ -1,5 +1,33 @@
+# Secrets and environment variables - STRICTLY IGNORED
 .env
+.env.*
+*.env
+.env.local
+.env.production
+
+# SQLite Databases & data files
 *.db
-__pycache__/
-*.pyc
+*.sqlite
+*.sqlite3
+bot_data.db
+
+# Vercel deployment cache and artifacts
 .vercel/
+
+# Python cache & build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*

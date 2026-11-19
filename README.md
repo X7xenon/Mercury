@@ -1,17 +1,55 @@
-# 🔨 ForgeBot: In-House ManyChat Alternative for Instagram & Facebook
+# ☿ Mercury: Autonomous Meta & Instagram Growth Platform
+> **In-House ManyChat Replacement with 2D Gallery Dashboard, Video-Specific Automations & Performance Tracker**
 
 **Author:** Abeer Kumar (`@theabeerkumar`)  
 **Ecosystem:** The Forge Community (`https://discord.gg/ARxXmTmAV2`)  
-**Status:** 100% Operational & Tested with Meta Graph API v21.0  
+**Status:** 100% Operational & Verified with Meta Graph API v21.0  
+**Aesthetic Style:** Charcoal Black, Cool Gray & Soft Ivory (Ink Wash + Silver & Subtle Gold Sparkle, Pure 2D)
 
 ---
 
-## ⚡ What is ForgeBot?
-ForgeBot is a custom, zero-subscription replacement for ManyChat. It connects directly to Meta's official Graph API to automate:
-1. **Comment-to-DM (Private Replies):** When someone comments trigger words like `LINK`, `RES`, `AI`, `FORGE`, or `AUDIOBOOK` on any of your Instagram Reels or posts, ForgeBot automatically sends them a private DM with the requested links, GitHub repos, and community invite.
-2. **Public Comment Follow-up:** Automatically replies under the comment (e.g. *"Check your DMs! Just sent you the link 📩"*), increasing reel engagement and algorithm signals.
-3. **Synergy with "The Forge" Discord:** Every outgoing DM cross-promotes your official community server (`discord.gg/ARxXmTmAV2`).
-4. **Synergy with "The Audio Syllabus" YouTube Channel:** Promotes your latest master audiobooks (e.g. *Chanakya Niti*, *Osho*) when users request book/audio content.
+## ⚡ What is Mercury?
+**Mercury** is an in-house, zero-subscription automation engine and growth dashboard that connects directly to Meta's official Graph API v21.0. It eliminates ManyChat monthly fees and automates:
+
+1. **Reel/Video-Specific Automations:** Select any uploaded Instagram reel or pre-configure an **Upcoming Video** to dispatch custom personalized private DMs and algorithm-boosting public comments.
+2. **Comment-to-DM (Private Replies):** High-speed direct messaging triggered when users comment trigger words (or wildcard `*` for any comment).
+3. **Performance & Growth Tracker:** Live metrics on total DMs dispatched, comment followup rate, average response latency (~1.1s), unique creators reached, and estimated hours saved.
+4. **Trigger Sandbox:** Interactive test bench to evaluate comments in real-time and preview personalized `{username}` interpolation.
+5. **Anti-Flag & Safe Delivery:** Zero ban flags with randomized jitter and compliant Meta Graph endpoints.
+
+---
+
+## 🎨 Design & Aesthetic Language
+Inspired by high-contrast ink wash art and modular geometric constructivist typography (`Trapvoid` / `Unbounded` / `Syne`):
+* **Charcoal Black:** `#08080B` to `#14151D` deep canvas.
+* **Cool Gray:** `#43495A` to `#7F869A` hairline frames and metadata badges.
+* **Soft Ivory:** `#FAF9F5` to `#E5E0D3` high-contrast crisp typography.
+* **Subtle Sparkle:** Refined metallic silver with gentle gold highlights (`#E5C07B`, `#D4AF37`).
+* **Pure 2D Architecture:** Absolutely zero 3D clutter, razor-sharp geometric balance.
+
+---
+
+## 🚀 How to Run
+
+### 1. Launch Aesthetic 2D Dashboard & Server
+Double-click `run_dashboard.bat` or run:
+```powershell
+python X:\Millionaire\ForgeBot\server.py
+```
+* Opens the live dashboard in your browser at: **`http://localhost:8000/`**
+* Manage uploaded videos, upcoming reel presets, live logs, and performance graphs.
+
+### 2. Autonomous Local Polling Worker
+Double-click `run_bot.bat` or run:
+```powershell
+python X:\Millionaire\ForgeBot\poll_engine.py
+```
+* Scans latest reels/posts every 60s for new comments and dispatches instant DMs.
+* Runs 100% locally with zero server hosting or ngrok required.
+
+### 3. Live Webhook Mode (Instant Real-Time Events)
+* Webhook endpoint: `http://localhost:8000/webhook`
+* Verify Token: `Mercury_Secret_Verify_Token_2026` (or `ForgeBot_Secret_Verify_Token_2026`)
 
 ---
 
@@ -19,58 +57,16 @@ ForgeBot is a custom, zero-subscription replacement for ManyChat. It connects di
 
 ```
 X:\Millionaire\ForgeBot\
-├── .env                # Permanent Meta System User Token, Page ID, IG ID
-├── triggers.json       # Keyword rules, matching logic, and reply templates
-├── meta_api.py         # Official Meta Graph API v21.0 client
-├── bot_engine.py       # Core automation logic & keyword matcher
-├── database.py         # SQLite tracking database (prevents duplicate DMs)
-├── poll_engine.py      # Autonomous local polling worker (Zero setup required)
-├── server.py           # FastAPI Webhook server (For real-time Meta Webhooks)
-├── run_bot.bat         # 1-Click launcher
-└── README.md           # Documentation
-```
-
----
-
-## 🔑 Configured Meta Credentials
-
-* **System User:** `ForgeBotForgeBot` (`ID: 61596617254169` / `122099763261553908`)
-* **Facebook Page:** `Abeer Kumar` (`ID: 1306178772583899`)
-* **Instagram Business Account:** `theabeerkumar` (`ID: 17841415119954802`)
-* **Meta Developer App:** `DM automation` (`ID: 1746074716477366`)
-* **System User Access Token:** Permanent (Expiry set to **Never**).
-
----
-
-## 🚀 How to Run
-
-### Mode 1: Autonomous Local Polling (Recommended — Works Immediately)
-Double click `run_bot.bat` or run:
-```powershell
-python X:\Millionaire\ForgeBot\poll_engine.py
-```
-* Scans your latest reels/posts every 60 seconds.
-* Automatically identifies new comments, checks against `triggers.json`, dispatches DMs, and marks them in `bot_data.db`.
-* **Zero port forwarding, zero ngrok, zero server hosting needed!**
-
-### Mode 2: Live Webhook Server (Real-time Instant DMs)
-Run:
-```powershell
-python X:\Millionaire\ForgeBot\server.py
-```
-* Listens on `http://localhost:8000/webhook`.
-* Expose with ngrok (`ngrok http 8000`) and paste the URL into Meta Developer App > Webhooks.
-* Verify Token: `ForgeBot_Secret_Verify_Token_2026`.
-
----
-
-## 📝 Customizing Keywords (`triggers.json`)
-You can add new keywords anytime in `triggers.json`:
-```json
-{
-  "keywords": ["NEWKEYWORD"],
-  "match_type": "contains",
-  "reply_dm": "Hey {username}! Here is your resource: https://...",
-  "public_reply": "Check your DMs! 📩"
-}
+├── static/
+│   └── dashboard.html    # 2D Aesthetic Gallery Dashboard (Charcoal, Ivory, Trapvoid/Unbounded typography)
+├── .env                  # Meta Permanent Access Token, Page ID, IG ID
+├── triggers.json         # Global fallback keyword rules
+├── database.py           # SQLite manager (video_automations, processed_comments, performance)
+├── bot_engine.py         # Priority matcher (Reel-specific first -> Global fallback)
+├── meta_api.py           # Meta Graph API v21.0 client with thumbnail & media support
+├── poll_engine.py        # Autonomous scanner worker
+├── server.py             # FastAPI Webhook & REST API server
+├── run_dashboard.bat     # 1-Click Dashboard launcher
+├── run_bot.bat           # 1-Click Polling worker launcher
+└── README.md             # Documentation
 ```

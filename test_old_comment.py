@@ -16,7 +16,7 @@ ctx.verify_mode = ssl.CERT_NONE
 
 # 1. Fetch 3 comments from reel 1
 url = f"https://graph.facebook.com/v21.0/18159554401483315/comments?fields=id,text,username,timestamp&limit=3&access_token={PAGE_ACCESS_TOKEN}"
-req = urllib.request.Request(url, headers={"User-Agent": "ForgeBot/1.0"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mercury/1.0"})
 with urllib.request.urlopen(req, context=ctx) as resp:
     comments = json.loads(resp.read().decode())
     print("Sample comments:", comments)

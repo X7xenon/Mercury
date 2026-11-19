@@ -16,7 +16,7 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 def fetch_json(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "ForgeBot/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mercury/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
             return json.loads(resp.read().decode())

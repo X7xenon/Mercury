@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercury — Gallery Automation & Growth Studio</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%238B6CFF'/></svg>">
+  
+  <!-- Curated Inktrap & Modular Typography (Trapvoid & .tokyo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&family=Unbounded:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            charcoal: {
+              980: '#060608',
+              950: '#09090D',
+              900: '#0E0F15',
+              850: '#13141D',
+              800: '#171924',
+              750: '#1E202E',
+              700: '#282B3D'
+            },
+            coolgray: {
+              100: '#E8EBF2',
+              200: '#CBD0DE',
+              300: '#A6ADC2',
+              400: '#7E869E',
+              500: '#5A6178',
+              600: '#3D4255',
+              700: '#272B38',
+              800: '#1B1E28',
+              900: '#11131B'
+            },
+            ivory: {
+              50: '#FAF9F5',
+              100: '#F5F3EB',
+              200: '#EEEAE0',
+              300: '#E2DCD0',
+              400: '#CEC6B6'
+            },
+            iris: {
+              DEFAULT: '#8B6CFF', // AI/automation accents, active indicators
+              400: '#A38BFF',
+              500: '#8B6CFF',
+              600: '#7654F7',
+              glow: 'rgba(139, 108, 255, 0.35)'
+            },
+            bignum: {
+              DEFAULT: '#C9D6E8', // Big numbers (29, 1, 1.0)
+              100: '#E4ECF6',
+              200: '#C9D6E8',
+              300: '#AFC0D6'
+            },
+            signallime: {
+              DEFAULT: '#C6FF3D', // Automation Active, live and operational dots
+              glow: 'rgba(198, 255, 61, 0.45)'
+            },
+            rose: {
+              DEFAULT: '#FF4D6D', // Ban flags, rate-limit warnings
+              glow: 'rgba(255, 77, 109, 0.45)'
+            },
+            gold: {
+              400: '#E5C07B',
+              500: '#D4AF37'
+            }
+          },
+          fontFamily: {
+            display: ['"Unbounded"', 'sans-serif'], // Trapvoid inktrap aesthetic
+            heading: ['"Syne"', 'sans-serif'],     // Bold avant-garde weight
+            sans: ['"Space Grotesk"', 'sans-serif'], // Editorial technical sans
+            mono: ['"JetBrains Mono"', 'monospace']  // Precision data numerals
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Inkwash canvas & Smooth Mobile Touch Scrolling */
+    html {
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      height: auto;
+    }
+    body {
+      background-color: #07070A;
+      color: #FAF9F5;
+      font-family: 'Space Grotesk', sans-serif;
+      overflow-x: hidden;
+      overflow-y: visible;
+      position: relative;
+      min-height: 100vh;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Ambient Ink Wash Overlay with Iris & Ice undertones */
+    .ink-wash-canvas {
+      background-image: 
+        radial-gradient(circle at 14% 10%, rgba(139, 108, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 86% 16%, rgba(201, 214, 232, 0.04) 0%, transparent 45%),
+        radial-gradient(circle at 50% 88%, rgba(61, 66, 85, 0.06) 0%, transparent 55%);
+    }
+
+    /* Gallery Frame Card (Trapvoid poster styling) */
+    .poster-card {
+      border: 1px solid rgba(166, 173, 194, 0.12);
+      border-radius: 1.25rem;
+      position: relative;
+    }
+    .poster-card::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px solid rgba(166, 173, 194, 0.05);
+      border-radius: 0.95rem;
+      pointer-events: none;
+    }
+
+    .hairline-border {
+      border: 1px solid rgba(166, 173, 194, 0.09);
+    }
+    .hairline-border-iris {
+      border: 1px solid rgba(139, 108, 255, 0.35);
+    }
+
+    /* Big Numbers in #C9D6E8 */
+    .bignum-text {
+      color: #C9D6E8;
+      text-shadow: 0 0 24px rgba(201, 214, 232, 0.15);
+    }
+    .iris-glow {
+      filter: drop-shadow(0 0 8px rgba(139, 108, 255, 0.45));
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #07070A; }
+    ::-webkit-scrollbar-thumb { background: #272B38; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3D4255; }
+  </style>
+</head>
+<body class="min-h-screen ink-wash-canvas antialiased selection:bg-[#8B6CFF]/30 selection:text-ivory-50">
+
+  <!-- ============================================================ -->
+  <!-- SIDEBAR DRAWER OVERLAY & PANEL (THREE-LINE HAMBURGER MENU)   -->
+  <!-- ============================================================ -->
+  <div id="sidebarOverlay" onclick="closeSidebar()" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 transition-opacity opacity-0 pointer-events-none duration-300 hidden"></div>
+
+  <aside id="sidebarPanel" class="fixed top-0 left-0 bottom-0 w-80 bg-charcoal-950 border-r hairline-border z-50 transform -translate-x-full pointer-events-none transition-transform duration-300 ease-in-out flex flex-col justify-between p-6 shadow-2xl">
+    <div class="space-y-7">
+      
+      <!-- Sidebar Brand Header -->
+      <div class="flex items-center justify-between pb-4 border-b hairline-border">
+        <div class="flex items-center">
+          <span class="w-3 h-3 rounded-full bg-[#8B6CFF] iris-glow inline-block mr-2.5"></span>
+          <span class="font-display font-black text-xl tracking-tighter text-[#FAF9F5]">MERCURY</span>
+        </div>
+        <button onclick="closeSidebar()" class="p-1 rounded-lg text-coolgray-400 hover:text-ivory-100 hover:bg-charcoal-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Navigation Section -->
+      <div>
+        <div class="text-[9px] font-mono tracking-[0.25em] uppercase text-coolgray-500 mb-3 px-3">Studio Navigation</div>
+        <nav class="space-y-1.5 font-mono text-xs uppercase tracking-wider">
+          
+          <button onclick="navTo('videos')" id="sideNav-videos" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all bg-[#8B6CFF]/15 text-[#FAF9F5] border border-[#8B6CFF]/40 shadow-[0_0_12px_rgba(139,108,255,0.2)]">
+            <span>Video Automations</span>
+            <span id="sideBadgeVideos" class="px-2 py-0.5 rounded-full text-[10px] bg-[#8B6CFF]/20 text-[#8B6CFF] font-bold">...</span>
+          </button>
+
+          <button onclick="navTo('tracker')" id="sideNav-tracker" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all text-coolgray-400 hover:text-ivory-100 hover:bg-charcoal-900 hairline-border hover:border-coolgray-700">
+            <span>Performance Tracker</span>
+          </button>
+
+          <button onclick="navTo('sandbox')" id="sideNav-sandbox" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all text-coolgray-400 hover:text-ivory-100 hover:bg-charcoal-900 hairline-border hover:border-coolgray-700">
+            <span>Trigger Sandbox</span>
+            <span class="text-[#8B6CFF] text-xs font-bold">+</span>
+          </button>
+
+          <button onclick="navTo('triggers')" id="sideNav-triggers" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all text-coolgray-400 hover:text-ivory-100 hover:bg-charcoal-900 hairline-border hover:border-coolgray-700">
+            <span>Global Triggers</span>
+          </button>
+
+          <button onclick="navTo('logs')" id="sideNav-logs" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all text-coolgray-400 hover:text-ivory-100 hover:bg-charcoal-900 hairline-border hover:border-coolgray-700">
+            <span>Activity Stream</span>
+          </button>
+
+        </nav>
+      </div>
+
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="pt-5 border-t hairline-border text-[10px] font-mono text-coolgray-500 space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-coolgray-400">Engine API</span>
+        <span class="text-[#C6FF3D] flex items-center space-x-1 font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#C6FF3D] animate-pulse"></span>
+          <span>v21.0 Online</span>
+        </span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-coolgray-400">Connected</span>
+        <span class="text-ivory-200">@theabeerkumar</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-coolgray-400">Safe Jitter</span>
+        <span class="text-[#8B6CFF] font-semibold">Active</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================ -->
+  <!-- TOP EDITORIAL GALLERY HEADER (WITH THREE-LINE HAMBURGER)     -->
+  <!-- ============================================================ -->
+  <header class="border-b hairline-border bg-charcoal-950/85 backdrop-blur-xl sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Left: Hamburger (Three lines) + Brand Logo -->
+      <div class="flex items-center space-x-3.5">
+        <!-- Three Lines Hamburger Button -->
+        <button onclick="toggleSidebar()" class="p-2 -ml-2 rounded-xl text-coolgray-300 hover:text-ivory-50 hover:bg-charcoal-850 hairline-border hover:border-coolgray-600 transition-all focus:outline-none active:scale-95" aria-label="Open Navigation Sidebar">
+          <svg class="w-5 h-5 text-ivory-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
+        <!-- Logo -->
+        <div class="flex items-center cursor-pointer" onclick="navTo('videos')">
+          <span class="w-3 h-3 rounded-full bg-[#8B6CFF] iris-glow inline-block mr-2.5"></span>
+          <span class="font-display font-black text-2xl tracking-tighter text-[#FAF9F5]">MERCURY</span>
+        </div>
+      </div>
+
+      <!-- Right: Live Operational Status & Quick Actions -->
+      <div class="flex items-center space-x-3">
+        <!-- Connected Instagram Account -->
+        <div class="hidden lg:flex items-center space-x-2.5 bg-charcoal-900 px-3.5 py-1.5 rounded-lg hairline-border">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#C6FF3D] animate-pulse shadow-[0_0_8px_#C6FF3D]"></span>
+          <span class="text-xs font-mono font-medium text-ivory-100">@theabeerkumar</span>
+        </div>
+
+        <!-- Live Autonomous Replier Status & Toggle -->
+        <div class="hidden sm:flex items-center space-x-2 bg-charcoal-900 px-3 py-1.5 rounded-lg hairline-border">
+          <span id="replierIndicatorDot" class="w-1.5 h-1.5 rounded-full bg-[#C6FF3D] animate-pulse shadow-[0_0_8px_#C6FF3D]"></span>
+          <span id="replierStatusText" class="text-xs font-mono font-medium text-ivory-100">Auto Replier: Active</span>
+          <button id="replierToggleBtn" onclick="toggleReplier()" class="text-[10px] font-mono px-2 py-0.5 rounded bg-charcoal-800 hover:bg-charcoal-750 text-coolgray-300 hover:text-ivory-100 hairline-border transition-colors">
+            Pause
+          </button>
+        </div>
+
+        <!-- 1-Click Scan Button -->
+        <button id="scanBtn" onclick="runManualScan()" class="flex items-center space-x-2 text-xs font-mono uppercase tracking-wider px-3.5 py-2 rounded-lg bg-charcoal-850 hover:bg-charcoal-800 text-ivory-50 hairline-border hover:border-[#8B6CFF]/50 transition-all active:scale-95">
+          <span id="scanBtnText">Run Scan</span>
+        </button>
+
+        <!-- Upcoming Video Automation Preset -->
+        <button onclick="openUpcomingModal()" class="flex items-center space-x-2 text-xs font-mono uppercase tracking-wider font-semibold px-4 py-2 rounded-lg bg-gradient-to-r from-charcoal-850 to-charcoal-750 text-ivory-50 hairline-border-iris hover:border-[#8B6CFF] transition-all shadow-[0_0_15px_rgba(139,108,255,0.15)] active:scale-95">
+          <span class="text-[#8B6CFF] font-bold">+</span>
+          <span>Upcoming Video</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-9">
+
+    <!-- ============================================================ -->
+    <!-- SECTION 1: PERFORMANCE TRACKER (BIG NUMBERS IN #C9D6E8)      -->
+    <!-- ============================================================ -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-[11px] font-mono tracking-[0.25em] uppercase text-coolgray-400 font-semibold">Engine Throughput & Metrics</h2>
+        </div>
+        <div class="text-[11px] font-mono text-coolgray-400 flex items-center space-x-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#C6FF3D] shadow-[0_0_6px_#C6FF3D]"></span>
+          <span class="text-[#C6FF3D] font-semibold">100% Operational</span>
+        </div>
+      </div>
+
+      <!-- 4 High-Contrast Poster Cards with #C9D6E8 Big Numbers & #8B6CFF Accents -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Metric 1: Total DMs Dispatched -->
+        <div class="poster-card p-6 bg-charcoal-900/90 flex flex-col justify-between group hover:border-[#8B6CFF]/40 transition-colors">
+          <div class="flex justify-between items-start">
+            <span class="text-[10px] font-mono tracking-[0.2em] uppercase text-coolgray-400">DMs Dispatched</span>
+            <span class="text-[10px] font-mono font-bold text-[#C6FF3D] bg-[#C6FF3D]/10 px-2 py-0.5 rounded border border-[#C6FF3D]/30 shadow-[0_0_8px_rgba(198,255,61,0.15)]">100% Rate</span>
+          </div>
+          <div class="my-4">
+            <!-- Big Number in #C9D6E8 -->
+            <div id="statTotalDMs" class="font-display text-5xl font-black bignum-text tracking-tight">29</div>
+            <div class="text-[11px] font-mono text-[#8B6CFF] mt-1">+29 delivered via Graph API</div>
+          </div>
+          <div class="pt-3 border-t hairline-border flex justify-between text-[11px] font-mono text-coolgray-400">
+            <span>Comments Followup:</span>
+            <span id="statTotalReplies" class="text-[#C9D6E8] font-semibold font-mono">29</span>
+          </div>
+        </div>
+
+        <!-- Metric 2: Active Video Automations -->
+        <div class="poster-card p-6 bg-charcoal-900/90 flex flex-col justify-between group hover:border-[#8B6CFF]/50 transition-colors">
+          <div class="flex justify-between items-start">
+            <span class="text-[10px] font-mono tracking-[0.2em] uppercase text-coolgray-400">Reels Configured</span>
+            <span class="text-xs text-[#8B6CFF] iris-glow">+</span>
+          </div>
+          <div class="my-4">
+            <!-- Big Number in #C9D6E8 -->
+            <div id="statActiveVideos" class="font-display text-5xl font-black bignum-text tracking-tight">1</div>
+            <div class="text-[11px] font-mono text-[#8B6CFF] mt-1">AI Automation Active</div>
+          </div>
+          <div class="pt-3 border-t hairline-border flex justify-between text-[11px] font-mono text-coolgray-400">
+            <span>Global Triggers:</span>
+            <span id="statGlobalRules" class="text-[#C9D6E8] font-semibold font-mono">7 active</span>
+          </div>
+        </div>
+
+        <!-- Metric 3: Unique Creators Engaged -->
+        <div class="poster-card p-6 bg-charcoal-900/90 flex flex-col justify-between group hover:border-[#8B6CFF]/40 transition-colors">
+          <div class="flex justify-between items-start">
+            <span class="text-[10px] font-mono tracking-[0.2em] uppercase text-coolgray-400">Unique Audience</span>
+            <span class="text-[10px] font-mono font-bold text-[#FF4D6D] bg-[#FF4D6D]/10 border border-[#FF4D6D]/30 px-2 py-0.5 rounded flex items-center space-x-1 shadow-[0_0_8px_rgba(255,77,109,0.2)]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#FF4D6D] animate-pulse"></span>
+              <span>0 Ban Flags</span>
+            </span>
+          </div>
+          <div class="my-4">
+            <!-- Big Number in #C9D6E8 -->
+            <div id="statUniqueUsers" class="font-display text-5xl font-black bignum-text tracking-tight">29</div>
+            <div class="text-[11px] font-mono text-coolgray-300 mt-1">Creators Reached</div>
+          </div>
+          <div class="pt-3 border-t hairline-border flex justify-between text-[11px] font-mono text-coolgray-400">
+            <span>Rate Limiter:</span>
+            <span class="text-[#C6FF3D] font-semibold font-mono flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#C6FF3D]"></span>
+              <span>Compliant</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Metric 4: Hours Saved & Latency -->
+        <div class="poster-card p-6 bg-charcoal-900/90 flex flex-col justify-between group hover:border-[#8B6CFF]/40 transition-colors">
+          <div class="flex justify-between items-start">
+            <span class="text-[10px] font-mono tracking-[0.2em] uppercase text-coolgray-400">Time Saved</span>
+            <span class="text-[10px] font-mono text-[#8B6CFF] bg-[#8B6CFF]/15 px-2 py-0.5 rounded border border-[#8B6CFF]/30">Autonomous</span>
+          </div>
+          <div class="my-4">
+            <!-- Big Number in #C9D6E8 -->
+            <div id="statHoursSaved" class="font-display text-5xl font-black bignum-text tracking-tight">1.0</div>
+            <div class="text-[11px] font-mono text-[#C9D6E8] mt-1">Hours of Manual Replying</div>
+          </div>
+          <div class="pt-3 border-t hairline-border flex justify-between text-[11px] font-mono text-coolgray-400">
+            <span>Dispatch Latency:</span>
+            <span class="text-[#C9D6E8] font-semibold font-mono">~1.1s</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 1: VIDEO AUTOMATIONS (CLEAN HOME VIEW)                   -->
+    <!-- ============================================================ -->
+    <section id="tab-videos" class="tab-pane space-y-6">
+      
+      <!-- Video Filter & Overview Bar -->
+      <div class="poster-card p-5 bg-charcoal-900/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-display font-bold text-sm tracking-wide text-ivory-50 uppercase">Reel-Specific Automation Studio</h3>
+          <p class="text-xs text-coolgray-400 mt-1">
+            Configure custom private DMs and public replies for any uploaded Instagram reel or prepare your upcoming video.
+          </p>
+        </div>
+        
+        <div class="flex items-center space-x-3 w-full sm:w-auto">
+          <input type="text" id="videoSearchInput" oninput="filterVideos()" placeholder="Search reels by caption..." class="w-full sm:w-64 px-3.5 py-2 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 placeholder-coolgray-500 focus:outline-none focus:border-[#8B6CFF] font-mono">
+          
+          <button onclick="loadVideos(true)" class="p-2 rounded-lg bg-charcoal-800 hairline-border hover:bg-charcoal-750 text-coolgray-300 hover:text-ivory-100 transition-colors" title="Reload from Meta Graph API">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Videos Grid -->
+      <div id="videosGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="col-span-full py-16 text-center text-coolgray-400 font-mono text-xs">
+          Loading Instagram Reels from Meta API...
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 2: PERFORMANCE TRACKER (DRAWER / VIEW)                   -->
+    <!-- ============================================================ -->
+    <section id="tab-tracker" class="tab-pane hidden space-y-6">
+      
+      <!-- Back Navigation Header -->
+      <div class="flex items-center justify-between pb-2">
+        <button onclick="navTo('videos')" class="text-xs font-mono text-coolgray-400 hover:text-[#8B6CFF] flex items-center space-x-1.5 transition-colors">
+          <span>&larr;</span>
+          <span>Back to Video Automations</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Engagement Breakdown by Reel -->
+        <div class="lg:col-span-2 poster-card p-6 bg-charcoal-900/90 space-y-5">
+          <div class="flex items-center justify-between border-b hairline-border pb-4">
+            <div>
+              <span class="text-[10px] font-mono tracking-[0.2em] uppercase text-[#8B6CFF] block mb-1">AI CONVERSIONS</span>
+              <h3 class="font-display font-bold text-base text-ivory-50 tracking-tight">Reel Conversion Leaderboard</h3>
+              <p class="text-xs text-coolgray-400 mt-0.5">Automated DMs delivered per Instagram Reel</p>
+            </div>
+            <span class="text-xs font-mono text-[#8B6CFF] bg-[#8B6CFF]/15 px-2.5 py-1 rounded border border-[#8B6CFF]/30">Highest APV</span>
+          </div>
+
+          <div id="topReelsList" class="space-y-3">
+            <div class="text-xs font-mono text-coolgray-500 py-6 text-center">Loading performance logs...</div>
+          </div>
+        </div>
+
+        <!-- Right: Keyword Velocity -->
+        <div class="poster-card p-6 bg-charcoal-900/90 space-y-5">
+          <div class="border-b hairline-border pb-4">
+            <span class="text-[10px] font-mono tracking-[0.2em] uppercase text-[#8B6CFF] block mb-1">TRIGGER FREQUENCY</span>
+            <h3 class="font-display font-bold text-base text-ivory-50 tracking-tight">Keyword Velocity</h3>
+            <p class="text-xs text-coolgray-400 mt-0.5">Most frequent comments triggering DMs</p>
+          </div>
+
+          <div id="keywordDistribution" class="space-y-3.5">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <div class="pt-4 border-t hairline-border text-[11px] text-coolgray-400 space-y-2.5 font-mono">
+            <div class="flex justify-between">
+              <span>Avg Dispatch Speed:</span>
+              <span class="text-[#C9D6E8] font-semibold">1,180ms</span>
+            </div>
+            <div class="flex justify-between">
+              <span>DM Delivery Success:</span>
+              <span class="text-[#C6FF3D] font-semibold font-mono">99.8%</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Public Comments Followup:</span>
+              <span class="text-[#C9D6E8] font-semibold">100% matched</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2D SVG Activity Volume Visualization -->
+      <div class="poster-card p-6 bg-charcoal-900/90 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-mono tracking-[0.2em] uppercase text-[#8B6CFF] block mb-1">TIMELINE</span>
+            <h3 class="font-display font-bold text-base text-ivory-50 tracking-tight">Delivery Volume Timeline</h3>
+            <p class="text-xs text-coolgray-400 mt-0.5">Automated comment-to-DM conversions over past days</p>
+          </div>
+          <div class="flex items-center space-x-2 text-[11px] font-mono text-coolgray-300">
+            <span class="w-2.5 h-2.5 rounded-sm bg-[#8B6CFF] inline-block"></span>
+            <span class="text-[#C9D6E8]">DMs Dispatched</span>
+          </div>
+        </div>
+
+        <div class="h-48 w-full flex items-end space-x-6 pt-6 px-4 bg-charcoal-950/80 rounded-xl hairline-border overflow-x-auto" id="activityChart">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 3: TRIGGER SANDBOX (DRAWER / VIEW)                       -->
+    <!-- ============================================================ -->
+    <section id="tab-sandbox" class="tab-pane hidden space-y-6">
+      
+      <!-- Back Navigation Header -->
+      <div class="flex items-center justify-between pb-2">
+        <button onclick="navTo('videos')" class="text-xs font-mono text-coolgray-400 hover:text-[#8B6CFF] flex items-center space-x-1.5 transition-colors">
+          <span>&larr;</span>
+          <span>Back to Video Automations</span>
+        </button>
+      </div>
+
+      <div class="poster-card p-6 bg-charcoal-900/90 space-y-6">
+        <div class="border-b hairline-border pb-4">
+          <div class="flex items-center space-x-2">
+            <h3 class="font-display font-bold text-base text-ivory-50 tracking-tight">Real-Time Trigger & DM Playground</h3>
+            <span class="text-[#8B6CFF]">+</span>
+          </div>
+          <p class="text-xs text-coolgray-400 mt-1">
+            Simulate incoming Instagram comments on any reel to preview rule matching, personalized {username} interpolation, and public comment followup.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Test Inputs -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400 mb-1.5">Target Reel / Video (Optional)</label>
+              <select id="sandboxMediaSelect" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 focus:outline-none focus:border-[#8B6CFF] font-mono">
+                <option value="">-- Global Keywords (All Reels) --</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400 mb-1.5">Simulated Username</label>
+              <input type="text" id="sandboxUsername" value="creative_builder" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 focus:outline-none focus:border-[#8B6CFF] font-mono">
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400 mb-1.5">User Comment Text</label>
+              <textarea id="sandboxCommentText" rows="3" placeholder="e.g. Bro please send XenClips link or repo!" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 focus:outline-none focus:border-[#8B6CFF] font-mono placeholder-coolgray-600">XenClips</textarea>
+            </div>
+
+            <div class="flex items-center space-x-3 pt-2">
+              <button onclick="runSandboxTest()" class="px-5 py-2.5 rounded-lg bg-charcoal-800 hover:bg-charcoal-750 text-xs font-mono uppercase tracking-wider text-ivory-50 hairline-border-iris hover:border-[#8B6CFF] transition-all active:scale-95 flex items-center space-x-2">
+                <span class="text-[#8B6CFF]">+</span>
+                <span>Evaluate Trigger</span>
+              </button>
+              
+              <!-- Quick Presets -->
+              <span class="text-xs text-coolgray-500 font-mono">Presets:</span>
+              <button onclick="setSandboxPreset('LINK')" class="text-xs font-mono px-2.5 py-1 rounded bg-coolgray-800 text-coolgray-300 hover:text-[#C9D6E8]">LINK</button>
+              <button onclick="setSandboxPreset('XenClips')" class="text-xs font-mono px-2.5 py-1 rounded bg-coolgray-800 text-coolgray-300 hover:text-[#C9D6E8]">XenClips</button>
+              <button onclick="setSandboxPreset('AUDIOBOOK')" class="text-xs font-mono px-2.5 py-1 rounded bg-coolgray-800 text-coolgray-300 hover:text-[#C9D6E8]">AUDIOBOOK</button>
+              <button onclick="setSandboxPreset('FOLLOWED')" class="text-xs font-mono px-2.5 py-1 rounded bg-[#C6FF3D]/15 text-[#C6FF3D] border border-[#C6FF3D]/30 hover:bg-[#C6FF3D]/25 font-bold">FOLLOWED (Unlock Test)</button>
+            </div>
+          </div>
+
+          <!-- Evaluation Result Box -->
+          <div class="p-5 rounded-xl bg-charcoal-950 hairline-border space-y-4 flex flex-col justify-between">
+            <div class="space-y-3.5">
+              <div class="flex items-center justify-between border-b hairline-border pb-2.5">
+                <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400">Evaluation Result</span>
+                <span id="sandboxMatchBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-coolgray-800 text-coolgray-400">Awaiting Test</span>
+              </div>
+
+              <div>
+                <span class="text-[10px] font-mono uppercase tracking-[0.15em] text-coolgray-400">Public Comment Followup:</span>
+                <div id="sandboxPublicPreview" class="mt-1.5 p-2.5 rounded bg-charcoal-900 hairline-border text-xs text-ivory-200 font-mono italic">
+                  (Click "Evaluate Trigger" to preview)
+                </div>
+              </div>
+
+              <div>
+                <span class="text-[10px] font-mono uppercase tracking-[0.15em] text-coolgray-400">Private DM Delivered:</span>
+                <div id="sandboxDmPreview" class="mt-1.5 p-3 rounded bg-charcoal-900 hairline-border text-xs text-[#C9D6E8] font-mono whitespace-pre-line max-h-48 overflow-y-auto leading-relaxed">
+                  (Personalized DM message with {username} will render here)
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t hairline-border text-[10px] font-mono text-coolgray-500 flex justify-between">
+              <span>Rule source: <span id="sandboxSource" class="text-coolgray-300">--</span></span>
+              <span>Matched keyword: <span id="sandboxKeyword" class="text-[#8B6CFF] font-bold">--</span></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 4: GLOBAL TRIGGERS STUDIO (DRAWER / VIEW)                -->
+    <!-- ============================================================ -->
+    <section id="tab-triggers" class="tab-pane hidden space-y-6">
+      
+      <!-- Back Navigation Header -->
+      <div class="flex items-center justify-between pb-2">
+        <button onclick="navTo('videos')" class="text-xs font-mono text-coolgray-400 hover:text-[#8B6CFF] flex items-center space-x-1.5 transition-colors">
+          <span>&larr;</span>
+          <span>Back to Video Automations</span>
+        </button>
+      </div>
+
+      <div class="poster-card p-5 bg-charcoal-900/90 flex items-center justify-between">
+        <div>
+          <div class="flex items-center space-x-2">
+            <h3 class="font-display font-bold text-sm tracking-wide text-ivory-50 uppercase">Global Keyword Rules</h3>
+          </div>
+          <p class="text-xs text-coolgray-400 mt-1">Fallback triggers evaluated when no reel-specific rule overrides the comment.</p>
+        </div>
+        <button onclick="openNewGlobalRuleModal()" class="px-4 py-2 rounded-lg text-xs font-mono uppercase tracking-wider bg-charcoal-800 text-ivory-100 hairline-border hover:border-[#8B6CFF] transition-all flex items-center space-x-2">
+          <span class="text-[#8B6CFF] font-bold">+</span>
+          <span>Add Global Rule</span>
+        </button>
+      </div>
+
+      <div id="globalRulesList" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 5: ACTIVITY STREAM (DRAWER / VIEW)                       -->
+    <!-- ============================================================ -->
+    <section id="tab-logs" class="tab-pane hidden space-y-6">
+      
+      <!-- Back Navigation Header -->
+      <div class="flex items-center justify-between pb-2">
+        <button onclick="navTo('videos')" class="text-xs font-mono text-coolgray-400 hover:text-[#8B6CFF] flex items-center space-x-1.5 transition-colors">
+          <span>&larr;</span>
+          <span>Back to Video Automations</span>
+        </button>
+      </div>
+
+      <div class="poster-card p-5 bg-charcoal-900/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center space-x-2">
+            <h3 class="font-display font-bold text-sm tracking-wide text-ivory-50 uppercase">Processed Comments & Outgoing DMs</h3>
+          </div>
+          <p class="text-xs text-coolgray-400 mt-1">Recorded in SQLite `bot_data.db` to prevent duplicate messaging</p>
+        </div>
+
+        <div class="flex items-center space-x-3 w-full sm:w-auto">
+          <input type="text" id="logSearchInput" oninput="searchLogs()" placeholder="Search comments or users..." class="w-full sm:w-64 px-3.5 py-2 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 placeholder-coolgray-500 focus:outline-none focus:border-[#8B6CFF] font-mono">
+          <button onclick="loadLogs()" class="p-2 rounded-lg bg-charcoal-800 hairline-border text-coolgray-300 hover:text-ivory-100">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Activity Stream Table -->
+      <div class="overflow-x-auto rounded-2xl hairline-border bg-charcoal-900/80">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b hairline-border bg-charcoal-950/80 text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400">
+              <th class="py-3.5 px-5">User</th>
+              <th class="py-3.5 px-5">Comment Text</th>
+              <th class="py-3.5 px-5">DM Response Sent</th>
+              <th class="py-3.5 px-5">Reel ID</th>
+              <th class="py-3.5 px-5">Timestamp</th>
+              <th class="py-3.5 px-5 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody" class="divide-y hairline-border text-xs">
+            <tr>
+              <td colspan="6" class="py-8 text-center text-coolgray-500 font-mono">Loading activity stream...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- MODAL: CONFIGURE AUTOMATION FOR A VIDEO (UPLOADED OR UPCOMING)-->
+  <!-- ============================================================ -->
+  <div id="automationModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-charcoal-900 poster-card max-w-2xl w-full p-6 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      
+      <!-- Close button -->
+      <button onclick="closeAutomationModal()" class="absolute top-4 right-4 text-coolgray-400 hover:text-ivory-100 text-xl font-mono">&times;</button>
+
+      <div class="border-b hairline-border pb-3.5">
+        <div class="flex items-center space-x-2">
+          <span class="text-[#8B6CFF] font-mono text-sm">+</span>
+          <h3 id="modalTitle" class="font-display font-bold text-base text-ivory-50 tracking-wide">Configure Video Automation</h3>
+        </div>
+        <p id="modalSubtitle" class="text-xs text-coolgray-400 mt-1">Set the private DM and public reply triggered by comments on this reel.</p>
+      </div>
+
+      <form id="automationForm" onsubmit="saveAutomation(event)" class="space-y-4">
+        
+        <input type="hidden" id="formMediaId">
+        <input type="hidden" id="formPermalink">
+        <input type="hidden" id="formThumbnailUrl">
+        <input type="hidden" id="formIsUpcoming" value="0">
+
+        <!-- Video Snippet Preview -->
+        <div id="modalVideoPreview" class="p-3.5 rounded-xl bg-charcoal-950 hairline-border flex items-center space-x-3.5">
+          <div id="modalThumbnailWrap" class="w-14 h-14 rounded-lg bg-coolgray-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
+            <span class="text-coolgray-400 font-mono text-xs">Reel</span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div id="modalCaption" class="text-xs text-ivory-100 font-medium line-clamp-2 leading-relaxed">Caption snippet</div>
+            <div id="modalMetaInfo" class="text-[10px] font-mono text-coolgray-400 mt-0.5">ID: --</div>
+          </div>
+        </div>
+
+        <!-- Keyword Rules -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400">Trigger Keywords</label>
+            <span class="text-[10px] text-coolgray-500 font-mono">Comma-separated or '*' for any comment</span>
+          </div>
+          <input type="text" id="formKeywords" required placeholder="e.g. LINK, REPO, CODE, XENCLIPS (or * for any comment)" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 focus:outline-none focus:border-[#8B6CFF] font-mono">
+          <p class="text-[10px] text-coolgray-400 mt-1">Tip: Use <code class="text-[#8B6CFF] font-mono font-bold">*</code> if your reel asks viewers to "comment anything" to receive the link!</p>
+        </div>
+
+        <!-- Match Type & Active Status -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400 mb-1">Matching Rule</label>
+            <select id="formMatchType" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 focus:outline-none focus:border-[#8B6CFF] font-mono">
+              <option value="contains">Contains (e.g. "send link" matches LINK)</option>
+              <option value="exact">Exact (Only when comment is exactly the word)</option>
+              <option value="any">Any Comment on this Reel (*)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400 mb-1">Status</label>
+            <select id="formIsActive" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 focus:outline-none focus:border-[#8B6CFF] font-mono">
+              <option value="1">Active (Replies & Sends DMs)</option>
+              <option value="0">Paused / Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Private DM Template (Message 1) -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400">Private DM Template (Message 1)</label>
+            <span class="text-[10px] font-mono text-[#8B6CFF]">Supports {username}</span>
+          </div>
+          <textarea id="formReplyDm" rows="3" required placeholder="Hey {username}! Thanks for commenting. Here is the link you requested: https://..." class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 focus:outline-none focus:border-[#8B6CFF] font-mono leading-relaxed"></textarea>
+        </div>
+
+        <!-- 2-Message DM Sequence Accordion -->
+        <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+              <input type="checkbox" id="formEnable2Dms" onchange="toggle2DmsSection()" class="rounded bg-charcoal-900 border-coolgray-700 text-[#8B6CFF] focus:ring-0 cursor-pointer">
+              <label for="formEnable2Dms" class="text-xs font-mono font-medium text-ivory-100 cursor-pointer">Send 2-Message Sequence (Message 1 + Message 2)</label>
+            </div>
+            <span class="text-[9px] font-mono text-[#8B6CFF] bg-[#8B6CFF]/15 px-2 py-0.5 rounded border border-[#8B6CFF]/30 font-semibold">Dual DM</span>
+          </div>
+          <p class="text-[10px] text-coolgray-400">Sends Message 1 first, followed by Message 2 (e.g. greeting/warm intro first, then the resource link or community invite).</p>
+
+          <div id="sectionDm2" class="space-y-1.5 hidden pt-1 border-t hairline-border">
+            <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400 block">Private DM Template (Message 2 - Direct Resource / Link)</label>
+            <textarea id="formReplyDm2" rows="3" placeholder="Here is your direct access link: https://github.com/theabeerkumar/...\n\nMake sure to join The Forge Discord community as well: https://discord.gg/ARxXmTmAV2" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-900 hairline-border text-[#C9D6E8] focus:outline-none focus:border-[#8B6CFF] font-mono leading-relaxed"></textarea>
+          </div>
+        </div>
+
+        <!-- Follow-Gate ("Follow to Unlock" Growth Engine) -->
+        <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+              <input type="checkbox" id="formEnableFollowGate" onchange="toggleFollowGateSection()" class="rounded bg-charcoal-900 border-coolgray-700 text-[#C6FF3D] focus:ring-0 cursor-pointer">
+              <label for="formEnableFollowGate" class="text-xs font-mono font-bold text-ivory-100 cursor-pointer">Follow-Gate (Ask to Follow before sending Link)</label>
+            </div>
+            <span class="text-[9px] font-mono text-[#C6FF3D] bg-[#C6FF3D]/10 px-2 py-0.5 rounded border border-[#C6FF3D]/30 font-semibold">Viral Growth</span>
+          </div>
+          <p class="text-[10px] text-coolgray-400 leading-relaxed">
+            Asks non-followers to follow @theabeerkumar first with follow button. When they follow & reply "FOLLOWED", Mercury verifies and unlocks the secret link!
+          </p>
+
+          <div id="sectionFollowGate" class="space-y-3 hidden pt-1 border-t hairline-border">
+            <div>
+              <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400 block mb-1">Follow Request Message (Sent first to non-followers)</label>
+              <textarea id="formFollowGateMessage" rows="3" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-900 hairline-border text-ivory-200 focus:outline-none focus:border-[#8B6CFF] font-mono leading-relaxed" placeholder="Hey {username}! To unlock this link, make sure you follow @theabeerkumar first:\n\n1. Follow: https://www.instagram.com/theabeerkumar/\n2. Once followed, reply 'FOLLOWED' to this DM to instantly get your link!"></textarea>
+            </div>
+
+            <div>
+              <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-[#C6FF3D] block mb-1">Unlocked Resource Link (Sent after follow confirmation)</label>
+              <textarea id="formUnlockedDm" rows="3" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-900 hairline-border text-[#C9D6E8] focus:outline-none focus:border-[#8B6CFF] font-mono leading-relaxed" placeholder="Awesome, thanks for following @theabeerkumar! Here is your unlocked link:\nhttps://github.com/theabeerkumar/..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Public Reply Template -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-coolgray-400">Public Comment Followup Reply</label>
+            <span class="text-[10px] font-mono text-coolgray-500">Boosts algorithm signal</span>
+          </div>
+          <input type="text" id="formPublicReply" required placeholder="Check your DMs! Just sent you the details" class="w-full px-3.5 py-2.5 rounded-lg text-xs bg-charcoal-950 hairline-border text-ivory-100 focus:outline-none focus:border-[#8B6CFF] font-mono">
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex items-center justify-between pt-3.5 border-t hairline-border">
+          <button type="button" id="deleteAutomationBtn" onclick="deleteCurrentAutomation()" class="text-xs text-[#FF4D6D] hover:text-[#FF4D6D]/80 font-mono">
+            Disable Automation
+          </button>
+          
+          <div class="flex items-center space-x-3">
+            <button type="button" onclick="closeAutomationModal()" class="px-4 py-2 rounded-lg text-xs font-mono bg-charcoal-800 text-coolgray-300 hover:text-ivory-100 hairline-border">
+              Cancel
+            </button>
+            <button type="submit" class="px-5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider font-semibold bg-[#8B6CFF] hover:bg-[#7654F7] text-white transition-all active:scale-95 shadow-[0_0_15px_rgba(139,108,255,0.3)]">
+              Save Automation
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="px-4 py-2.5 rounded-xl bg-charcoal-900 border border-[#8B6CFF]/40 text-ivory-50 text-xs font-mono shadow-[0_0_20px_rgba(139,108,255,0.25)] flex items-center space-x-2.5">
+      <span class="text-[#8B6CFF]">+</span>
+      <span id="toastMsg">Action completed</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- APPLICATION ENGINE (PURE 2D JAVASCRIPT)                      -->
+  <!-- ============================================================ -->
+  <script>
+    const API_BASE = window.location.origin;
+    let allVideos = [];
+    let globalTriggers = { rules: [], default_rule: {} };
+    let activityLogs = [];
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStats();
+      loadVideos();
+      loadTriggers();
+      loadLogs();
+      fetchReplierStatus();
+      setInterval(loadStats, 20000);
+      setInterval(fetchReplierStatus, 15000);
+    });
+
+    // Autonomous Replier Status & Toggle
+    async function fetchReplierStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/api/replier/status`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const dot = document.getElementById('replierIndicatorDot');
+        const text = document.getElementById('replierStatusText');
+        const btn = document.getElementById('replierToggleBtn');
+        if (data.active) {
+          if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-[#C6FF3D] animate-pulse shadow-[0_0_8px_#C6FF3D]";
+          if (text) text.textContent = "Auto Replier: Active";
+          if (btn) {
+            btn.textContent = "Pause";
+            btn.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-charcoal-800 hover:bg-charcoal-750 text-coolgray-300 hover:text-ivory-100 hairline-border transition-colors";
+          }
+        } else {
+          if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-[#FF4D6D] shadow-[0_0_8px_#FF4D6D]";
+          if (text) text.textContent = "Auto Replier: Paused";
+          if (btn) {
+            btn.textContent = "Resume";
+            btn.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-[#C6FF3D]/15 text-[#C6FF3D] border border-[#C6FF3D]/40 font-bold hover:bg-[#C6FF3D]/25 transition-colors";
+          }
+        }
+      } catch (e) {
+        console.error("Replier status fetch error", e);
+      }
+    }
+
+    async function toggleReplier() {
+      try {
+        const res = await fetch(`${API_BASE}/api/replier/toggle`, { method: 'POST' });
+        const data = await res.json();
+        showToast(data.message);
+        fetchReplierStatus();
+      } catch (e) {
+        showToast("Error updating replier status.");
+      }
+    }
+
+    function toggle2DmsSection() {
+      const checked = document.getElementById('formEnable2Dms').checked;
+      const sec = document.getElementById('sectionDm2');
+      if (checked) {
+        sec.classList.remove('hidden');
+      } else {
+        sec.classList.add('hidden');
+      }
+    }
+
+    function toggleFollowGateSection() {
+      const checked = document.getElementById('formEnableFollowGate').checked;
+      const sec = document.getElementById('sectionFollowGate');
+      if (checked) {
+        sec.classList.remove('hidden');
+      } else {
+        sec.classList.add('hidden');
+      }
+    }
+
+    // Sidebar Drawer Handlers
+    function toggleSidebar() {
+      const panel = document.getElementById('sidebarPanel');
+      const isOpen = !panel.classList.contains('-translate-x-full');
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    }
+
+    function openSidebar() {
+      const panel = document.getElementById('sidebarPanel');
+      const overlay = document.getElementById('sidebarOverlay');
+      overlay.classList.remove('hidden');
+      void overlay.offsetWidth; // Force DOM reflow for CSS transition
+      panel.classList.remove('-translate-x-full', 'pointer-events-none');
+      overlay.classList.remove('opacity-0', 'pointer-events-none');
+      document.body.style.overflow = 'hidden'; // Lock background scroll only when drawer open
+    }
+
+    function closeSidebar() {
+      const panel = document.getElementById('sidebarPanel');
+      const overlay = document.getElementById('sidebarOverlay');
+      panel.classList.add('-translate-x-full', 'pointer-events-none');
+      overlay.classList.add('opacity-0', 'pointer-events-none');
+      document.body.style.overflow = ''; // Restore smooth document scrolling
+      setTimeout(() => {
+        if (panel.classList.contains('-translate-x-full')) {
+          overlay.classList.add('hidden');
+        }
+      }, 300);
+    }
+
+    // Navigation via Sidebar
+    function navTo(tabId) {
+      closeSidebar();
+      switchTab(tabId);
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      const activePane = document.getElementById(`tab-${tabId}`);
+      if (activePane) activePane.classList.remove('hidden');
+
+      // Update sidebar nav active states
+      const navIds = ['videos', 'tracker', 'sandbox', 'triggers', 'logs'];
+      navIds.forEach(id => {
+        const btn = document.getElementById(`sideNav-${id}`);
+        if (!btn) return;
+        if (id === tabId) {
+          btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all bg-[#8B6CFF]/15 text-[#FAF9F5] border border-[#8B6CFF]/40 shadow-[0_0_12px_rgba(139,108,255,0.2)]";
+        } else {
+          btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all text-coolgray-400 hover:text-ivory-100 hover:bg-charcoal-900 hairline-border hover:border-coolgray-700";
+        }
+      });
+
+      // Scroll to top of view
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Toast
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3200);
+    }
+
+    // -------------------------------------------------------------
+    // STATS & PERFORMANCE TRACKER
+    // -------------------------------------------------------------
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/analytics`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        document.getElementById('statTotalDMs').textContent = data.total_dms || 0;
+        document.getElementById('statTotalReplies').textContent = data.total_comments_replied || 0;
+        document.getElementById('statActiveVideos').textContent = data.active_video_automations || 0;
+        document.getElementById('statUniqueUsers').textContent = data.unique_users || 0;
+        document.getElementById('statHoursSaved').textContent = (data.hours_saved || 0).toFixed(1);
+
+        renderPerformanceTracker(data);
+      } catch (err) {
+        console.error('Analytics load error', err);
+      }
+    }
+
+    function renderPerformanceTracker(data) {
+      // 1. Top Reels List
+      const topList = document.getElementById('topReelsList');
+      if (data.top_media && data.top_media.length > 0) {
+        topList.innerHTML = data.top_media.map((item, idx) => {
+          return `
+            <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border flex items-center justify-between">
+              <div class="flex items-center space-x-3.5">
+                <span class="font-display text-sm font-bold text-[#8B6CFF]">#${idx + 1}</span>
+                <div>
+                  <div class="text-xs font-mono text-[#C9D6E8] font-medium">Reel ID: ${item.media_id}</div>
+                  <div class="text-[10px] text-coolgray-400 font-mono">Automated private replies & public comments</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-base font-display font-black text-[#C9D6E8]">${item.count}</span>
+                <span class="text-[10px] font-mono text-coolgray-400 block">DMs sent</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        topList.innerHTML = `<div class="text-xs text-coolgray-500 font-mono py-4 text-center">No reel transactions recorded yet.</div>`;
+      }
+
+      // 2. Keyword Velocity with #8B6CFF Gradient
+      const kwList = document.getElementById('keywordDistribution');
+      if (data.top_keywords && data.top_keywords.length > 0) {
+        kwList.innerHTML = data.top_keywords.map(kw => {
+          return `
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-mono">
+                <span class="text-[#C9D6E8] font-medium">${kw.keyword}</span>
+                <span class="text-[#8B6CFF] font-semibold">${kw.count} triggers</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-charcoal-950 overflow-hidden hairline-border">
+                <div class="h-full bg-gradient-to-r from-[#4A3B8C] to-[#8B6CFF] rounded-full" style="width: ${Math.min(100, (kw.count / Math.max(1, data.total_dms)) * 100)}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        kwList.innerHTML = `<div class="text-xs text-coolgray-500 font-mono py-2 text-center">Awaiting incoming keyword triggers</div>`;
+      }
+
+      // 3. 2D Activity Volume Timeline with #8B6CFF Accent
+      const chartEl = document.getElementById('activityChart');
+      if (data.history && data.history.length > 0) {
+        const maxCount = Math.max(...data.history.map(h => h.count), 5);
+        chartEl.innerHTML = data.history.map(h => {
+          const heightPercent = Math.max(20, Math.round((h.count / maxCount) * 100));
+          return `
+            <div class="flex-1 flex flex-col items-center group relative min-w-[42px]">
+              <div class="text-[10px] font-mono text-[#C9D6E8] mb-1 opacity-90">${h.count}</div>
+              <div class="w-full bg-[#8B6CFF]/40 hover:bg-[#8B6CFF] rounded-t transition-colors shadow-[0_0_8px_rgba(139,108,255,0.2)]" style="height: ${heightPercent}%;"></div>
+              <div class="text-[10px] font-mono text-coolgray-400 mt-2 truncate max-w-full">${h.day.slice(5)}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        chartEl.innerHTML = `<div class="w-full text-center text-xs font-mono text-coolgray-500 py-10">Chart will populate as comments are processed.</div>`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // VIDEO AUTOMATIONS (UPCOMING & UPLOADED)
+    // -------------------------------------------------------------
+    async function loadVideos(forceRefresh = false) {
+      const grid = document.getElementById('videosGrid');
+      if (!allVideos.length || forceRefresh) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center text-coolgray-400 font-mono text-xs">
+            Fetching Instagram Reels from Meta API...
+          </div>
+        `;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/videos`);
+        const data = await res.json();
+        allVideos = data.videos || [];
+
+        const badge = document.getElementById('sideBadgeVideos');
+        if (badge) badge.textContent = allVideos.length;
+
+        populateSandboxSelect(allVideos);
+        renderVideosGrid(allVideos);
+      } catch (err) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-[#FF4D6D] font-mono text-xs">
+            Failed to connect to Meta Graph API. Please ensure server is running.
+          </div>
+        `;
+      }
+    }
+
+    function renderVideosGrid(videos) {
+      const grid = document.getElementById('videosGrid');
+      if (!videos.length) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center text-coolgray-400 font-mono text-xs">
+            No reels found. Click "Upcoming Video" above to configure your next upload!
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = videos.map(v => {
+        const hasAuto = v.automation && v.automation.is_active;
+        const auto = v.automation || {};
+        const isUpcoming = v.is_upcoming;
+        const keywords = auto.keywords || [];
+        const thumbUrl = v.thumbnail_url || v.media_url || '';
+        const commentsCount = v.comments_count || 0;
+        const commentsLabel = commentsCount === 1 ? '1 comment' : `${commentsCount} comments`;
+
+        return `
+          <div class="poster-card bg-charcoal-900/90 flex flex-col justify-between overflow-hidden group hover:border-[#8B6CFF]/40 transition-all ${isUpcoming ? 'hairline-border-iris' : ''}">
+            
+            <div>
+              <!-- Video Media Top -->
+              <div class="relative aspect-video bg-charcoal-950 overflow-hidden flex items-center justify-center">
+                ${thumbUrl 
+                  ? `<img src="${thumbUrl}" alt="Reel thumbnail" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                     <div class="hidden w-full h-full flex items-center justify-center bg-charcoal-950">
+                       <span class="font-display text-coolgray-600 text-xs font-bold tracking-widest">MERCURY REEL</span>
+                     </div>`
+                  : `<div class="font-display text-coolgray-600 text-xs font-bold tracking-widest">MERCURY REEL</div>`
+                }
+                
+                <!-- Status Badge with Signal Lime #C6FF3D -->
+                <div class="absolute top-3 right-3 flex flex-col items-end space-y-1">
+                  ${hasAuto 
+                    ? `<span class="px-2.5 py-1 rounded-full text-[9px] font-mono font-bold bg-[#C6FF3D]/15 text-[#C6FF3D] border border-[#C6FF3D]/40 flex items-center space-x-1.5 backdrop-blur-md shadow-[0_0_12px_rgba(198,255,61,0.25)]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#C6FF3D] animate-pulse shadow-[0_0_6px_#C6FF3D]"></span>
+                        <span>AUTOMATION ACTIVE</span>
+                      </span>`
+                    : `<span class="px-2 py-0.5 rounded-full text-[9px] font-mono bg-charcoal-950/90 text-coolgray-400 border border-coolgray-700/60 backdrop-blur-md">
+                        UNCONFIGURED
+                      </span>`
+                  }
+                  ${auto.enable_follow_gate ? `<span class="px-2 py-0.5 rounded text-[8px] font-mono font-bold bg-[#C6FF3D]/20 text-[#C6FF3D] border border-[#C6FF3D]/40 backdrop-blur-md">FOLLOW-GATE</span>` : ''}
+                  ${auto.reply_dm_2 ? `<span class="px-2 py-0.5 rounded text-[8px] font-mono font-bold bg-[#8B6CFF]/20 text-[#C9D6E8] border border-[#8B6CFF]/40 backdrop-blur-md">2-MESSAGE DM</span>` : ''}
+                </div>
+
+                ${isUpcoming ? `
+                  <div class="absolute top-3 left-3 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-[#8B6CFF]/25 text-[#C9D6E8] border border-[#8B6CFF]/40 backdrop-blur-md">
+                    UPCOMING VIDEO
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Content Info -->
+              <div class="p-4 space-y-3">
+                <div class="text-xs text-ivory-100 font-medium line-clamp-2 leading-relaxed">
+                  ${v.caption || '<span class="text-coolgray-500 italic">No caption provided</span>'}
+                </div>
+
+                <!-- Meta Row -->
+                <div class="flex items-center justify-between text-[11px] font-mono text-coolgray-400 pt-1 border-t hairline-border">
+                  <span class="text-[#C9D6E8] font-mono">${commentsLabel}</span>
+                  <a href="${v.permalink}" target="_blank" class="hover:text-[#8B6CFF] text-coolgray-400 flex items-center space-x-1 transition-colors">
+                    <span>Instagram</span>
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                  </a>
+                </div>
+
+                <!-- Active Rules Preview -->
+                ${hasAuto ? `
+                  <div class="p-3 rounded-xl bg-charcoal-950 hairline-border space-y-1.5 text-[11px]">
+                    <div class="flex items-center space-x-1.5">
+                      <span class="text-[#8B6CFF] font-mono text-[9px] uppercase tracking-wider font-semibold">KEYWORDS:</span>
+                      <div class="flex flex-wrap gap-1">
+                        ${keywords.map(k => `<span class="px-2 py-0.5 rounded bg-[#8B6CFF]/15 text-[#C9D6E8] border border-[#8B6CFF]/30 font-mono text-[10px] font-bold">${k}</span>`).join('')}
+                      </div>
+                    </div>
+                    <div class="text-[10px] text-coolgray-400 truncate">
+                      <span class="text-coolgray-500">DM 1:</span> "${auto.reply_dm || ''}"
+                    </div>
+                    ${auto.reply_dm_2 ? `
+                      <div class="text-[10px] text-[#C9D6E8] truncate">
+                        <span class="text-[#8B6CFF]">DM 2:</span> "${auto.reply_dm_2}"
+                      </div>
+                    ` : ''}
+                    ${auto.enable_follow_gate ? `
+                      <div class="text-[9px] font-mono text-[#C6FF3D] flex items-center space-x-1 pt-0.5">
+                        <span class="w-1 h-1 rounded-full bg-[#C6FF3D]"></span>
+                        <span>Follow-Gate Active (Requires Follow)</span>
+                      </div>
+                    ` : ''}
+                  </div>
+                ` : `
+                  <div class="p-2.5 rounded-xl bg-charcoal-950/40 hairline-border text-[11px] text-coolgray-500 italic font-mono">
+                    Uses global fallback keyword triggers
+                  </div>
+                `}
+              </div>
+            </div>
+
+            <!-- Card Action Footer -->
+            <div class="p-4 pt-0">
+              <button onclick="openConfigureModal('${v.id}')" class="w-full py-2.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-all flex items-center justify-center space-x-2 ${
+                hasAuto 
+                  ? 'bg-charcoal-800 hover:bg-charcoal-750 text-[#C9D6E8] hairline-border hover:border-[#8B6CFF]/50' 
+                  : 'bg-coolgray-800 hover:bg-coolgray-700 text-ivory-100 hairline-border-iris hover:border-[#8B6CFF]'
+              }">
+                <span class="text-[#8B6CFF]">+</span>
+                <span>${hasAuto ? 'Edit Automation' : 'Set Automation'}</span>
+              </button>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterVideos() {
+      const q = document.getElementById('videoSearchInput').value.toLowerCase().trim();
+      const filtered = allVideos.filter(v => (v.caption || '').toLowerCase().includes(q) || (v.id || '').includes(q));
+      renderVideosGrid(filtered);
+    }
+
+    // Modal Handlers
+    function openConfigureModal(mediaId) {
+      const v = allVideos.find(x => x.id === mediaId);
+      if (!v) return;
+
+      const auto = v.automation || {};
+      const thumbUrl = v.thumbnail_url || v.media_url || '';
+      document.getElementById('modalTitle').textContent = `Configure Reel Automation`;
+      document.getElementById('modalSubtitle').textContent = `Reel ID: ${v.id}`;
+      document.getElementById('formMediaId').value = v.id;
+      document.getElementById('formPermalink').value = v.permalink || '';
+      document.getElementById('formThumbnailUrl').value = thumbUrl;
+      document.getElementById('formIsUpcoming').value = v.is_upcoming ? '1' : '0';
+
+      document.getElementById('modalCaption').textContent = v.caption || 'No caption';
+      document.getElementById('modalMetaInfo').textContent = `ID: ${v.id} • ${v.comments_count || 0} comments`;
+      
+      const thumbWrap = document.getElementById('modalThumbnailWrap');
+      if (thumbUrl) {
+        thumbWrap.innerHTML = `<img src="${thumbUrl}" class="w-full h-full object-cover">`;
+      } else {
+        thumbWrap.innerHTML = `<span class="text-coolgray-400 font-mono text-xs">Reel</span>`;
+      }
+
+      document.getElementById('formKeywords').value = (auto.keywords || ['LINK', 'REPO']).join(', ');
+      document.getElementById('formMatchType').value = auto.match_type || 'contains';
+      document.getElementById('formIsActive').value = auto.is_active !== undefined ? auto.is_active : '1';
+      document.getElementById('formReplyDm').value = auto.reply_dm || 'Hey {username}! Here is the link you requested from the reel:\nhttps://github.com/theabeerkumar\n\nConnect with other builders in The Forge: https://discord.gg/ARxXmTmAV2';
+      document.getElementById('formPublicReply').value = auto.public_reply || 'Check your DMs! Just sent you the link';
+
+      // 2-Message DM Sequence setup
+      const hasDm2 = Boolean(auto.reply_dm_2 && auto.reply_dm_2.trim());
+      document.getElementById('formEnable2Dms').checked = hasDm2;
+      document.getElementById('formReplyDm2').value = auto.reply_dm_2 || '';
+      toggle2DmsSection();
+
+      // Follow-Gate setup
+      const hasFollowGate = Boolean(auto.enable_follow_gate);
+      document.getElementById('formEnableFollowGate').checked = hasFollowGate;
+      document.getElementById('formFollowGateMessage').value = auto.follow_gate_message || 'Hey {username}! To unlock this link, make sure you follow @theabeerkumar first:\n\n1. Follow: https://www.instagram.com/theabeerkumar/\n2. Once followed, reply \'FOLLOWED\' to this DM to instantly get your link!';
+      document.getElementById('formUnlockedDm').value = auto.unlocked_dm || 'Awesome, thanks for following @theabeerkumar! Here is your unlocked link:\nhttps://github.com/theabeerkumar';
+      toggleFollowGateSection();
+
+      const deleteBtn = document.getElementById('deleteAutomationBtn');
+      deleteBtn.style.display = auto.media_id ? 'block' : 'none';
+
+      document.body.style.overflow = 'hidden';
+      document.getElementById('automationModal').classList.remove('hidden');
+    }
+
+    function openUpcomingModal() {
+      const tempId = `upcoming_${Date.now()}`;
+      document.getElementById('modalTitle').textContent = `Setup Upcoming Video Preset`;
+      document.getElementById('modalSubtitle').textContent = `Configure automated DM & replies before you upload your next reel.`;
+      document.getElementById('formMediaId').value = tempId;
+      document.getElementById('formPermalink').value = '#';
+      document.getElementById('formThumbnailUrl').value = '';
+      document.getElementById('formIsUpcoming').value = '1';
+
+      document.getElementById('modalCaption').textContent = 'Upcoming Video (Will trigger on your next reel upload)';
+      document.getElementById('modalMetaInfo').textContent = `Preset Key: ${tempId}`;
+      document.getElementById('modalThumbnailWrap').innerHTML = `<span class="text-[#8B6CFF] font-display font-bold text-xs">NEXT</span>`;
+
+      document.getElementById('formKeywords').value = 'LINK, REPO, STARTUP';
+      document.getElementById('formMatchType').value = 'contains';
+      document.getElementById('formIsActive').value = '1';
+      document.getElementById('formReplyDm').value = 'Hey {username}! Thanks for checking out the new video!\n\nHere is the resource link:\nhttps://github.com/theabeerkumar\n\nAlso join The Forge community on Discord: https://discord.gg/ARxXmTmAV2';
+      document.getElementById('formPublicReply').value = 'Check your DMs! Just sent you the details';
+
+      // Reset 2-DM and Follow-Gate toggles
+      document.getElementById('formEnable2Dms').checked = false;
+      document.getElementById('formReplyDm2').value = '';
+      toggle2DmsSection();
+
+      document.getElementById('formEnableFollowGate').checked = false;
+      document.getElementById('formFollowGateMessage').value = 'Hey {username}! To unlock this link, make sure you follow @theabeerkumar first:\n\n1. Follow: https://www.instagram.com/theabeerkumar/\n2. Once followed, reply \'FOLLOWED\' to this DM to instantly get your link!';
+      document.getElementById('formUnlockedDm').value = 'Awesome, thanks for following @theabeerkumar! Here is your unlocked link:\nhttps://github.com/theabeerkumar';
+      toggleFollowGateSection();
+
+      document.getElementById('deleteAutomationBtn').style.display = 'none';
+      document.body.style.overflow = 'hidden';
+      document.getElementById('automationModal').classList.remove('hidden');
+    }
+
+    function closeAutomationModal() {
+      document.body.style.overflow = '';
+      document.getElementById('automationModal').classList.add('hidden');
+    }
+
+    async function saveAutomation(e) {
+      e.preventDefault();
+      const mediaId = document.getElementById('formMediaId').value;
+      const keywordsRaw = document.getElementById('formKeywords').value;
+      const keywords = keywordsRaw.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      const matchType = document.getElementById('formMatchType').value;
+      const isActive = parseInt(document.getElementById('formIsActive').value);
+      const replyDm = document.getElementById('formReplyDm').value;
+      const enable2Dms = document.getElementById('formEnable2Dms').checked;
+      const replyDm2 = enable2Dms ? document.getElementById('formReplyDm2').value : '';
+      const enableFollowGate = document.getElementById('formEnableFollowGate').checked ? 1 : 0;
+      const followGateMessage = document.getElementById('formFollowGateMessage').value;
+      const unlockedDm = document.getElementById('formUnlockedDm').value;
+      const publicReply = document.getElementById('formPublicReply').value;
+      const permalink = document.getElementById('formPermalink').value;
+      const caption = document.getElementById('modalCaption').textContent;
+      const thumbnailUrl = document.getElementById('formThumbnailUrl').value;
+      const isUpcoming = parseInt(document.getElementById('formIsUpcoming').value);
+
+      const payload = {
+        media_id: mediaId,
+        keywords: keywords,
+        match_type: matchType,
+        is_active: isActive,
+        reply_dm: replyDm,
+        reply_dm_2: replyDm2,
+        enable_follow_gate: enableFollowGate,
+        follow_gate_message: followGateMessage,
+        unlocked_dm: unlockedDm,
+        public_reply: publicReply,
+        permalink: permalink,
+        caption: caption,
+        thumbnail_url: thumbnailUrl,
+        is_upcoming: isUpcoming
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/videos/automation`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast('Video automation saved successfully.');
+          closeAutomationModal();
+          loadVideos(true);
+          loadStats();
+        } else {
+          showToast('Failed to save video automation.');
+        }
+      } catch (err) {
+        showToast('Network error while saving automation.');
+      }
+    }
+
+    async function deleteCurrentAutomation() {
+      const mediaId = document.getElementById('formMediaId').value;
+      if (!confirm(`Disable automation for this video?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/videos/automation/${mediaId}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast('Automation disabled.');
+          closeAutomationModal();
+          loadVideos(true);
+          loadStats();
+        }
+      } catch (err) {
+        showToast('Error removing automation.');
+      }
+    }
+
+    // -------------------------------------------------------------
+    // SANDBOX / TESTER
+    // -------------------------------------------------------------
+    function populateSandboxSelect(videos) {
+      const sel = document.getElementById('sandboxMediaSelect');
+      sel.innerHTML = `<option value="">-- Global Keywords (All Reels) --</option>`;
+      videos.forEach(v => {
+        const captionSnip = (v.caption || '').slice(0, 45).replace(/\n/g, ' ');
+        const isUpcoming = v.is_upcoming ? '[UPCOMING] ' : '';
+        sel.innerHTML += `<option value="${v.id}">${isUpcoming}${v.id} - ${captionSnip}...</option>`;
+      });
+    }
+
+    function setSandboxPreset(kw) {
+      document.getElementById('sandboxCommentText').value = kw;
+      runSandboxTest();
+    }
+
+    async function runSandboxTest() {
+      const mediaId = document.getElementById('sandboxMediaSelect').value;
+      const username = document.getElementById('sandboxUsername').value.trim() || 'user';
+      const commentText = document.getElementById('sandboxCommentText').value.trim();
+
+      const matchBadge = document.getElementById('sandboxMatchBadge');
+      const publicPreview = document.getElementById('sandboxPublicPreview');
+      const dmPreview = document.getElementById('sandboxDmPreview');
+      const sourceEl = document.getElementById('sandboxSource');
+      const kwEl = document.getElementById('sandboxKeyword');
+
+      matchBadge.textContent = 'Evaluating...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/test-trigger`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            comment_text: commentText,
+            media_id: mediaId,
+            username: username
+          })
+        });
+
+        const data = await res.json();
+        if (data.matched) {
+          matchBadge.className = 'text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#C6FF3D]/15 text-[#C6FF3D] border border-[#C6FF3D]/40 shadow-[0_0_10px_rgba(198,255,61,0.25)] font-bold';
+          matchBadge.textContent = data.is_unlocked ? 'FOLLOW-GATE UNLOCKED' : (data.is_follow_gate ? 'FOLLOW-GATE PROMPT' : 'MATCH CONFIRMED');
+          publicPreview.textContent = data.rendered_public_reply || '(No public reply set)';
+
+          if (data.is_follow_gate) {
+            dmPreview.innerHTML = `
+              <div class="space-y-2">
+                <div class="text-[10px] font-mono text-[#C6FF3D] font-bold tracking-wider">[STEP 1: SENT TO USER]</div>
+                <div class="p-2.5 rounded bg-charcoal-950 hairline-border text-ivory-100 whitespace-pre-line leading-relaxed">${data.rendered_dm}</div>
+                <div class="text-[10px] font-mono text-[#8B6CFF] font-bold tracking-wider pt-1">[STEP 2: SENT WHEN USER REPLIES 'FOLLOWED']</div>
+                <div class="p-2.5 rounded bg-charcoal-950 border border-[#8B6CFF]/30 text-[#C9D6E8] whitespace-pre-line leading-relaxed">${data.unlocked_preview}</div>
+              </div>
+            `;
+          } else if (data.has_two_messages && data.rendered_dm_2) {
+            dmPreview.innerHTML = `
+              <div class="space-y-2">
+                <div class="text-[10px] font-mono text-coolgray-400 font-bold tracking-wider">[MESSAGE 1]</div>
+                <div class="p-2.5 rounded bg-charcoal-950 hairline-border text-ivory-100 whitespace-pre-line leading-relaxed">${data.rendered_dm}</div>
+                <div class="text-[10px] font-mono text-[#8B6CFF] font-bold tracking-wider pt-1">[MESSAGE 2 (RESOURCE LINK)]</div>
+                <div class="p-2.5 rounded bg-charcoal-950 border border-[#8B6CFF]/30 text-[#C9D6E8] whitespace-pre-line leading-relaxed">${data.rendered_dm_2}</div>
+              </div>
+            `;
+          } else {
+            dmPreview.textContent = data.rendered_dm || '(No DM template set)';
+          }
+          sourceEl.textContent = data.source;
+          kwEl.textContent = data.matched_keyword;
+        } else {
+          matchBadge.className = 'text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#FF4D6D]/15 text-[#FF4D6D] border border-[#FF4D6D]/35 font-semibold';
+          matchBadge.textContent = 'NO MATCH';
+          publicPreview.textContent = 'No rule matched this comment.';
+          dmPreview.textContent = 'No automated DM would be sent.';
+          sourceEl.textContent = 'None';
+          kwEl.textContent = 'None';
+        }
+      } catch (err) {
+        matchBadge.textContent = 'Error connecting to tester';
+      }
+    }
+
+    // -------------------------------------------------------------
+    // GLOBAL TRIGGERS STUDIO
+    // -------------------------------------------------------------
+    async function loadTriggers() {
+      try {
+        const res = await fetch(`${API_BASE}/api/triggers`);
+        globalTriggers = await res.json();
+        renderGlobalTriggers();
+        document.getElementById('statGlobalRules').textContent = `${(globalTriggers.rules || []).length} active`;
+      } catch (err) {
+        console.error('Triggers load error', err);
+      }
+    }
+
+    function renderGlobalTriggers() {
+      const container = document.getElementById('globalRulesList');
+      const rules = globalTriggers.rules || [];
+
+      if (!rules.length) {
+        container.innerHTML = `<div class="p-8 text-center text-xs font-mono text-coolgray-500">No global rules configured.</div>`;
+        return;
+      }
+
+      container.innerHTML = rules.map((r, idx) => {
+        return `
+          <div class="poster-card p-5 bg-charcoal-900/90 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs font-mono text-[#8B6CFF] font-bold">#${idx + 1}</span>
+                <div class="flex flex-wrap gap-1.5">
+                  ${(r.keywords || []).map(k => `<span class="px-2 py-0.5 rounded bg-coolgray-800 text-[#C9D6E8] border border-coolgray-700 font-mono text-xs font-semibold">${k}</span>`).join('')}
+                </div>
+                <span class="text-[10px] font-mono text-coolgray-400 uppercase">(${r.match_type || 'contains'})</span>
+              </div>
+              <button onclick="deleteGlobalRule(${idx})" class="text-xs text-[#FF4D6D] hover:text-[#FF4D6D]/80 font-mono">Delete</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono pt-2 border-t hairline-border">
+              <div class="p-3 rounded-lg bg-charcoal-950 hairline-border">
+                <span class="text-[9px] text-[#8B6CFF] uppercase tracking-wider block mb-1 font-semibold">Public Followup:</span>
+                <span class="text-[#C9D6E8]">${r.public_reply || '--'}</span>
+              </div>
+              <div class="p-3 rounded-lg bg-charcoal-950 hairline-border">
+                <span class="text-[9px] text-[#8B6CFF] uppercase tracking-wider block mb-1 font-semibold">Private DM:</span>
+                <span class="text-[#C9D6E8] whitespace-pre-line line-clamp-3 leading-relaxed">${r.reply_dm || '--'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openNewGlobalRuleModal() {
+      const keywords = prompt("Enter trigger keywords separated by comma (e.g. DISCORD, FORGE, SERVER):");
+      if (!keywords) return;
+      const dm = prompt("Enter Private DM message (supports {username}):");
+      if (!dm) return;
+      const pub = prompt("Enter Public Comment reply:", "Check your DMs! Just sent you the invite");
+
+      globalTriggers.rules = globalTriggers.rules || [];
+      globalTriggers.rules.push({
+        keywords: keywords.split(',').map(s => s.trim().toUpperCase()).filter(Boolean),
+        match_type: "contains",
+        reply_dm: dm,
+        public_reply: pub || "Sent to your DMs!"
+      });
+
+      saveGlobalTriggersBackend();
+    }
+
+    async function deleteGlobalRule(idx) {
+      if (!confirm("Delete this global rule?")) return;
+      globalTriggers.rules.splice(idx, 1);
+      saveGlobalTriggersBackend();
+    }
+
+    async function saveGlobalTriggersBackend() {
+      try {
+        const res = await fetch(`${API_BASE}/api/triggers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(globalTriggers)
+        });
+        if (res.ok) {
+          showToast('Global triggers updated.');
+          renderGlobalTriggers();
+        }
+      } catch (err) {
+        showToast('Failed to save triggers.');
+      }
+    }
+
+    // -------------------------------------------------------------
+    // ACTIVITY STREAM & LOGS
+    // -------------------------------------------------------------
+    async function loadLogs() {
+      try {
+        const res = await fetch(`${API_BASE}/api/comments?limit=50`);
+        const data = await res.json();
+        activityLogs = data.comments || [];
+        renderLogsTable(activityLogs);
+      } catch (err) {
+        console.error('Logs load error', err);
+      }
+    }
+
+    function renderLogsTable(logs) {
+      const tbody = document.getElementById('logsTableBody');
+      if (!logs.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-coolgray-500 font-mono">No comments processed yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(c => {
+        return `
+          <tr class="hover:bg-charcoal-850/60 transition-colors">
+            <td class="py-3.5 px-5 font-mono font-medium text-[#C9D6E8]">
+              <span class="text-[#8B6CFF]">@</span>${c.username}
+            </td>
+            <td class="py-3.5 px-5 text-coolgray-200 max-w-xs truncate" title="${c.comment_text}">
+              "${c.comment_text}"
+            </td>
+            <td class="py-3.5 px-5 font-mono text-[11px] text-[#C9D6E8] max-w-xs truncate" title="${c.reply_sent}">
+              ${c.reply_sent}
+            </td>
+            <td class="py-3.5 px-5 font-mono text-[11px] text-coolgray-400">
+              ${c.media_id || '--'}
+            </td>
+            <td class="py-3.5 px-5 font-mono text-[11px] text-coolgray-500 whitespace-nowrap">
+              ${(c.processed_at || '').slice(0, 16)}
+            </td>
+            <td class="py-3.5 px-5 text-right">
+              <button onclick="deleteLogItem('${c.comment_id}')" class="text-[11px] font-mono text-coolgray-400 hover:text-[#FF4D6D] transition-colors">
+                Clear
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function searchLogs() {
+      const q = document.getElementById('logSearchInput').value.toLowerCase().trim();
+      const filtered = activityLogs.filter(c => 
+        (c.username || '').toLowerCase().includes(q) ||
+        (c.comment_text || '').toLowerCase().includes(q) ||
+        (c.reply_sent || '').toLowerCase().includes(q) ||
+        (c.media_id || '').includes(q)
+      );
+      renderLogsTable(filtered);
+    }
+
+    async function deleteLogItem(commentId) {
+      if (!confirm(`Delete comment record ${commentId}? This allows the bot to process it again if re-scanned.`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/comments/${commentId}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast('Record deleted.');
+          loadLogs();
+          loadStats();
+        }
+      } catch (err) {
+        showToast('Error removing comment record.');
+      }
+    }
+
+    // -------------------------------------------------------------
+    // MANUAL SCAN ACTION
+    // -------------------------------------------------------------
+    async function runManualScan() {
+      const btn = document.getElementById('scanBtn');
+      const btnText = document.getElementById('scanBtnText');
+      btnText.textContent = 'Scanning...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/scan`, { method: 'POST' });
+        const data = await res.json();
+        showToast(`Scan complete: ${data.new_comments_processed} new comments found.`);
+        loadLogs();
+        loadStats();
+      } catch (err) {
+        showToast('Manual scan error. Ensure server is online.');
+      } finally {
+        btnText.textContent = 'Run Scan';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

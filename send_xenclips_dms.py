@@ -1,5 +1,5 @@
 """
-ForgeBot: Targeted XenClips DMs Dispatcher with Anti-Ban / Anti-Flag Guardrails.
+Mercury: Targeted XenClips DMs Dispatcher with Anti-Ban / Anti-Flag Guardrails.
 Sends personalized automated DMs to users who commented on XenClips reels.
 """
 
@@ -66,7 +66,7 @@ def get_eligible_comments(days_limit=7):
     for r in REELS:
         url = f"https://graph.facebook.com/v21.0/{r['id']}/comments?fields=id,text,username,timestamp&limit=50&access_token={PAGE_ACCESS_TOKEN}"
         while url:
-            req = urllib.request.Request(url, headers={"User-Agent": "ForgeBot/1.0"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mercury/1.0"})
             try:
                 with urllib.request.urlopen(req, timeout=12, context=ctx) as resp:
                     data = json.loads(resp.read().decode())
@@ -125,7 +125,7 @@ def send_private_reply(comment_id: str, text: str) -> dict:
 
 def run_batch_sender(min_delay=10.0, max_delay=16.0):
     print("=" * 65)
-    print("🛡️ FORGEBOT SAFE XENCLIPS DM DISPATCHER (ANTI-FLAG MODE)")
+    print("🛡️ MERCURY SAFE XENCLIPS DM DISPATCHER (ANTI-FLAG MODE)")
     print(f"⏱️ Random delay between DMs: {min_delay}s - {max_delay}s")
     print("=" * 65)
 

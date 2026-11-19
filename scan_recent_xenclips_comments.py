@@ -28,7 +28,7 @@ def fetch_recent_comments(media_id, days=7):
     total_scanned = 0
     
     while url:
-        req = urllib.request.Request(url, headers={"User-Agent": "ForgeBot/1.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "Mercury/1.0"})
         try:
             with urllib.request.urlopen(req, timeout=12, context=ctx) as resp:
                 data = json.loads(resp.read().decode())

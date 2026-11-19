@@ -27,7 +27,7 @@ def get_all_7d_comments():
     for r in REELS:
         url = f"https://graph.facebook.com/v21.0/{r['id']}/comments?fields=id,text,username,timestamp&limit=50&access_token={PAGE_ACCESS_TOKEN}"
         while url:
-            req = urllib.request.Request(url, headers={"User-Agent": "ForgeBot/1.0"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mercury/1.0"})
             with urllib.request.urlopen(req, context=ctx) as resp:
                 data = json.loads(resp.read().decode())
             

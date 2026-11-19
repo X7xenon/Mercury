@@ -1,5 +1,5 @@
 """
-ForgeBot Autonomous Polling Worker
+Mercury Autonomous Polling Worker
 Periodically scans recent reels and posts for new comments and dispatches ManyChat-style automated DMs.
 Runs 100% locally with zero webhook setup required!
 """
@@ -36,16 +36,26 @@ def scan_recent_comments(limit_media: int = 10, dry_run: bool = False):
         if comments_count == 0:
             continue
 
-        comments = get_media_comments(media_id)
+        try:
+            comments = get_media_comments(media_id)
+        except Exception as e:
+            print(f"Error fetching comments for media {media_id}: {e}")
+            continue
+
+        if not isinstance(comments, list):
+            continue
+
         for c in comments:
             cid = c.get("id")
             uname = c.get("username", "user")
             text = c.get("text", "")
+            from_obj = c.get("from") or c.get("user") or {}
+            user_id = from_obj.get("id")
 
             if not is_comment_processed(cid):
                 new_comments_count += 1
                 print(f"\n🔔 New Comment Found on Reel [{caption}...]:")
-                print(f"   From: @{uname}")
+                print(f"   From: @{uname} (ID: {user_id or 'unknown'})")
                 print(f"   Comment ID: {cid}")
                 print(f"   Text: \"{text}\"")
 
@@ -55,7 +65,8 @@ def scan_recent_comments(limit_media: int = 10, dry_run: bool = False):
                         media_id=media_id,
                         username=uname,
                         comment_text=text,
-                        post_public_reply=True
+                        post_public_reply=True,
+                        user_id=user_id
                     )
                     print(f"   Result: {res.get('status')}")
                 else:
@@ -66,7 +77,7 @@ def scan_recent_comments(limit_media: int = 10, dry_run: bool = False):
 
 def run_poll_loop(interval_seconds: int = 60):
     print("=" * 60)
-    print("🚀 ForgeBot Instagram Automation Engine Started")
+    print("☿ Mercury Instagram Automation Engine Started")
     print(f"📡 Polling interval: {interval_seconds}s")
     print(f"📊 Currently processed comments in DB: {get_all_processed_count()}")
     print("=" * 60)
@@ -76,7 +87,7 @@ def run_poll_loop(interval_seconds: int = 60):
             scan_recent_comments()
             time.sleep(interval_seconds)
     except KeyboardInterrupt:
-        print("\nForgeBot stopped by user.")
+        print("\nMercury engine stopped by user.")
 
 
 if __name__ == "__main__":
