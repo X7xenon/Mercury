@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 
 # Default credentials (can be overridden via environment variables)
 DEFAULT_USERNAME = os.getenv("DASHBOARD_USERNAME", "theabeerkumar").strip()
-DEFAULT_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "theabeerkumar2026").strip()
+DEFAULT_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "Radh@15soami").strip()
 AUTH_SECRET = os.getenv("AUTH_SECRET", "Mercury_Auth_Secret_Key_Secure_9988").encode("utf-8")
 COOKIE_NAME = "mercury_session"
 SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30  # 30 days
