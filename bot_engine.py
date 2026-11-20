@@ -243,9 +243,21 @@ def process_incoming_comment(
 
     print(f"[DM RESULT] {dm_res}")
 
-    # Public Reply (Optional)
+    # Check if DM was delivered successfully
+    dm_succeeded = False
+    if isinstance(dm_res, dict):
+        if dm_res.get("status") == "success":
+            inner_res = dm_res.get("response", {})
+            if isinstance(inner_res, dict) and "error" not in inner_res:
+                dm_succeeded = True
+            elif "error" not in dm_res:
+                dm_succeeded = True
+        elif bool(dm_res.get("recipient_id") or dm_res.get("message_id")):
+            dm_succeeded = True
+
+    # Public Reply (only post if DM was actually delivered)
     pub_res = None
-    if post_public_reply and public_reply:
+    if post_public_reply and public_reply and dm_succeeded:
         pub_res = reply_to_comment(comment_id=comment_id, reply_text=public_reply)
         print(f"[PUBLIC REPLY RESULT] {pub_res}")
 

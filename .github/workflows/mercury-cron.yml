@@ -2,8 +2,8 @@ name: Mercury Autonomous Poller 24/7
 
 on:
   schedule:
-    # Triggers every 15 minutes to guarantee 24/7 comment polling coverage
-    - cron: '*/15 * * * *'
+    # Triggers every 5 minutes to guarantee 24/7 comment polling coverage
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:

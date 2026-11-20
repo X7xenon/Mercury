@@ -105,5 +105,4 @@ def run_poll_loop(interval_seconds: int = 60):
 
 
 if __name__ == "__main__":
-    # Perform single scan check
-    scan_recent_comments(limit_media=10, dry_run=True)
+    run_poll_loop(interval_seconds=15)

@@ -225,7 +225,8 @@ def send_two_dms(comment_id: str, message1: str, message2: str, user_id: str = N
     # Combined dual-message layout for comment-to-DM Private Reply
     combined = f"{message1}\n\n───────────────\n\n{message2}"
     res = send_private_reply(comment_id=comment_id, message_text=combined)
-    return {"status": "success", "mode": "combined_private_reply", "response": res}
+    is_success = "error" not in res and bool(res.get("recipient_id") or res.get("message_id"))
+    return {"status": "success" if is_success else "error", "mode": "combined_private_reply", "response": res}
 
 
 if __name__ == "__main__":

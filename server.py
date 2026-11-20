@@ -555,24 +555,26 @@ async def handle_webhook(request: Request):
             field = change.get("field")
             val = change.get("value", {})
 
-            if field == "comments":
-                cid = val.get("id")
-                text = val.get("text", "")
-                media_id = val.get("media", {}).get("id")
+            if field in ("comments", "comment"):
+                cid = val.get("id") or val.get("comment_id")
+                text = val.get("text") or val.get("message", "")
+                media = val.get("media", {})
+                media_id = media.get("id") if isinstance(media, dict) else (val.get("media_id") or val.get("post_id"))
                 from_user = val.get("from", {})
-                username = from_user.get("username", "user")
+                username = from_user.get("username") or from_user.get("name", "user")
                 user_id = from_user.get("id")
 
-                print(f"📩 Mercury Comment Event: @{username} on media {media_id}: '{text}'")
-                res = bot_engine.process_incoming_comment(
-                    comment_id=cid,
-                    media_id=media_id,
-                    username=username,
-                    comment_text=text,
-                    post_public_reply=True,
-                    user_id=user_id
-                )
-                results.append(res)
+                if cid and text:
+                    print(f"📩 Mercury Comment Event: @{username} on media {media_id}: '{text}'")
+                    res = bot_engine.process_incoming_comment(
+                        comment_id=cid,
+                        media_id=media_id,
+                        username=username,
+                        comment_text=text,
+                        post_public_reply=True,
+                        user_id=user_id
+                    )
+                    results.append(res)
 
         # 2. Direct Messages (messaging events)
         messaging = entry.get("messaging", [])
@@ -595,6 +597,18 @@ async def handle_webhook(request: Request):
                         meta_api.send_direct_message(recipient_id=sender_id, message_text=unlocked_text)
                         results.append({"status": "follow_gate_unlocked_via_dm", "user_id": sender_id})
                         continue
+
+                # Keyword match for direct message
+                dm_rule = bot_engine.match_comment(msg_text)
+                if dm_rule and dm_rule.get("reply_dm"):
+                    reply_text = bot_engine.safe_format(dm_rule.get("reply_dm", ""), "")
+                    meta_api.send_direct_message(recipient_id=sender_id, message_text=reply_text)
+                    if dm_rule.get("reply_dm_2"):
+                        time.sleep(1.2)
+                        reply_text_2 = bot_engine.safe_format(dm_rule.get("reply_dm_2", ""), "")
+                        meta_api.send_direct_message(recipient_id=sender_id, message_text=reply_text_2)
+                    results.append({"status": "dm_keyword_replied", "sender": sender_id, "matched": dm_rule.get("matched_keyword")})
+                    continue
 
                 results.append({"status": "dm_received", "sender": sender_id, "text": msg_text})
 
