@@ -8,6 +8,8 @@ import tempfile
 import json
 import re
 from pathlib import Path
+import meta_api
+import database
 from meta_api import send_private_reply, reply_to_comment, send_direct_message
 from database import is_comment_processed, mark_comment_processed, get_video_automation
 
