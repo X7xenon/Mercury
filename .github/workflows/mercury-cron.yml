@@ -1,0 +1,15 @@
+name: Mercury Autonomous Poller 24/7
+
+on:
+  schedule:
+    # Triggers every 15 minutes to guarantee 24/7 comment polling coverage
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  poll-comments:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Mercury Polling Engine
+        run: |
+          curl -f -sS -m 25 "https://mercury-bot-delta.vercel.app/api/cron/poll?limit=3" || true
