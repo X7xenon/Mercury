@@ -142,6 +142,40 @@ async def serve_dashboard(request: Request):
     return HTMLResponse(content="<h1>Mercury Authentication Portal Loading...</h1>", status_code=401)
 
 
+@app.get("/privacy", response_class=HTMLResponse)
+@app.get("/terms", response_class=HTMLResponse)
+def serve_privacy_policy():
+    return HTMLResponse(content="""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mercury Automation - Privacy Policy & Data Deletion</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #222; }
+    h1, h2 { color: #111; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy — Mercury Automation</h1>
+  <p><strong>Effective Date:</strong> November 2026</p>
+  <p>Mercury Automation operates direct messaging and comment automation tools for Instagram creators and developers in full compliance with the Meta Platform Terms.</p>
+  
+  <h2>Information We Process</h2>
+  <p>We only process public comment data, public Instagram usernames, and comment text submitted to our configured Instagram posts and reels to provide requested resources and direct messages.</p>
+  
+  <h2>Data Storage & Security</h2>
+  <p>We do not sell, rent, or distribute personal data to third parties. Data is processed solely for conversational automation and analytics.</p>
+  
+  <h2>User Data Deletion Instructions</h2>
+  <p>Users have the right to request deletion of their data at any time. To request deletion of your interaction history, please email <code>kumarabeer007@gmail.com</code> with your Instagram username, or send a direct message with the keyword <code>DELETE DATA</code>. Your data will be permanently purged within 48 hours.</p>
+
+  <h2>Contact</h2>
+  <p>If you have any questions regarding privacy or data handling, contact: <code>kumarabeer007@gmail.com</code>.</p>
+</body>
+</html>""", status_code=200)
+
+
 # -------------------------------------------------------------
 # REST API: SYSTEM & ANALYTICS
 # -------------------------------------------------------------
