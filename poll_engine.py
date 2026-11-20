@@ -16,26 +16,40 @@ from bot_engine import process_incoming_comment
 from database import is_comment_processed, get_all_processed_count
 
 
-def scan_recent_comments(limit_media: int = 10, dry_run: bool = False):
-    """Scan latest posts and process any new comments."""
-    print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Scanning recent media...")
-    media_list = get_recent_media(limit=limit_media)
+def scan_recent_comments(limit_media: int = 5, dry_run: bool = False):
+    """
+    Scan all configured automation reels AND recent posts to guarantee 100% comment coverage.
+    Ensures comments on older configured reels are NEVER missed.
+    """
+    from database import get_video_automations
+    print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Scanning media for incoming comments...")
     
-    if not media_list:
-        print("No media returned from Graph API.")
+    # 1. ALWAYS include all active configured reels from DB
+    target_media_ids = set()
+    try:
+        automations = get_video_automations()
+        for mid, auto in automations.items():
+            if auto.get("is_active") and not auto.get("is_upcoming"):
+                target_media_ids.add(str(mid))
+    except Exception as e:
+        print(f"[POLL NOTICE] Error reading video automations: {e}")
+
+    # 2. Also include recent media from Instagram
+    try:
+        media_list = get_recent_media(limit=limit_media)
+        for item in media_list:
+            if item.get("id"):
+                target_media_ids.add(str(item["id"]))
+    except Exception as e:
+        print(f"[POLL NOTICE] Error fetching recent media: {e}")
+
+    if not target_media_ids:
+        print("No media IDs found to scan.")
         return 0
 
     new_comments_count = 0
 
-    for item in media_list:
-        media_id = item.get("id")
-        caption = (item.get("caption") or "").replace("\n", " ")[:50]
-        comments_count = item.get("comments_count", 0)
-
-        # Skip if 0 comments reported
-        if comments_count == 0:
-            continue
-
+    for media_id in target_media_ids:
         try:
             comments = get_media_comments(media_id)
         except Exception as e:
@@ -54,7 +68,7 @@ def scan_recent_comments(limit_media: int = 10, dry_run: bool = False):
 
             if not is_comment_processed(cid):
                 new_comments_count += 1
-                print(f"\n🔔 New Comment Found on Reel [{caption}...]:")
+                print(f"\n🔔 New Comment Found on Reel {media_id}:")
                 print(f"   From: @{uname} (ID: {user_id or 'unknown'})")
                 print(f"   Comment ID: {cid}")
                 print(f"   Text: \"{text}\"")
