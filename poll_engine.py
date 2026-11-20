@@ -49,13 +49,18 @@ def scan_recent_comments(limit_media: int = 5, dry_run: bool = False):
 
     new_comments_count = 0
 
-    for media_id in target_media_ids:
+    # Fetch comments for all target media in parallel for ultra-fast serverless execution (<3s)
+    import concurrent.futures
+    def fetch_comments_safe(mid):
         try:
-            comments = get_media_comments(media_id)
+            return mid, get_media_comments(mid)
         except Exception as e:
-            print(f"Error fetching comments for media {media_id}: {e}")
-            continue
+            return mid, []
 
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        media_comments_results = list(executor.map(fetch_comments_safe, list(target_media_ids)))
+
+    for media_id, comments in media_comments_results:
         if not isinstance(comments, list):
             continue
 
