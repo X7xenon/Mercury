@@ -44,7 +44,7 @@ def _request(endpoint: str, method: str = "GET", payload: dict = None) -> dict:
     req = urllib.request.Request(url_with_token, data=data, headers=headers, method=method)
 
     try:
-        with urllib.request.urlopen(req, timeout=12, context=ctx) as resp:
+        with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")

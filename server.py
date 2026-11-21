@@ -418,15 +418,20 @@ async def save_triggers(request: Request, payload: dict = Body(...)):
 
 
 @app.get("/api/cron/poll")
-def cron_poll(limit: int = 3):
+def cron_poll(limit: int = 2):
     """
     Vercel Cron endpoint: triggered automatically by Vercel scheduler or external ping
     to poll for incoming comments on serverless deployment (kept ultra-fast for serverless timeout).
     """
-    processed = poll_engine.scan_recent_comments(limit_media=limit, dry_run=False)
+    t0 = time.time()
+    processed = poll_engine.scan_recent_comments(limit_media=limit, dry_run=False, max_batch=3)
+    elapsed = round(time.time() - t0, 2)
     return {
         "status": "success",
         "processed_comments": processed,
+        "duration_seconds": elapsed,
+        "total_in_db": database.get_all_processed_count(),
+        "active_automations": len(database.get_video_automations()),
         "scanned_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
     }
 

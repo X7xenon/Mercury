@@ -254,6 +254,13 @@ def process_incoming_comment(
                 dm_succeeded = True
         elif bool(dm_res.get("recipient_id") or dm_res.get("message_id")):
             dm_succeeded = True
+        elif dm_res.get("error") == 400:
+            detail = dm_res.get("detail", {})
+            err = detail.get("error", {}) if isinstance(detail, dict) else {}
+            if err.get("code") == -1 and err.get("error_subcode") == 2534023:
+                # Subcode 2534023: "The comment that you are trying to reply to already has a reply."
+                print(f"[DM ALREADY SENT] Comment {comment_id} was already delivered previously.")
+                dm_succeeded = True
 
     # Public Reply (only post if DM was actually delivered)
     pub_res = None

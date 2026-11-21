@@ -24,14 +24,28 @@ else:
     DB_PATH = Path(__file__).parent / "bot_data.db"
 
 
+_INITIALIZED = False
+
+
 def get_db():
+    global _INITIALIZED
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    if not _INITIALIZED:
+        _INITIALIZED = True
+        try:
+            cur = conn.execute("SELECT count(*) as count FROM video_automations")
+            count = cur.fetchone()["count"]
+            if count == 0:
+                init_db()
+        except sqlite3.OperationalError:
+            init_db()
     return conn
 
 
 def init_db():
-    with get_db() as conn:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
         conn.execute("""
             CREATE TABLE IF NOT EXISTS processed_comments (
                 comment_id TEXT PRIMARY KEY,
@@ -94,63 +108,118 @@ def init_db():
         if "unlocked_dm" not in columns:
             conn.execute("ALTER TABLE video_automations ADD COLUMN unlocked_dm TEXT")
 
-        # Seed default XenClips automations if missing
-        xenclips_defaults = [
-            (
-                "18159554401483315",
-                "https://www.instagram.com/reel/DbsJifchlUi/",
-                "Stop scrolling. Start creating. Every minute you spend consuming content grows at someone else's audience. Every clip you publish grows yours. Meet XenClips — a 100% local AI clipping software that's free, private, and lightning fast. No cloud. No subscriptions. Just AI-powered clipping on your own PC. Comment 'XENCLIPS' if you want early access.",
-                "",
-                json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "ACCESS", "LINK", "EARLY", "SEND", "*"]),
-                "contains",
-                "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
-                "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
-                "Check your DMs! Just sent you the XenClips details.",
-                0,
-                "",
-                "",
-                1,
-                0
-            ),
-            (
-                "17907781038461021",
-                "https://www.instagram.com/reel/Dbp5cpJhE08/",
-                "🚀 Built this to solve my own problem. Most creators spend hours editing, trimming, and adding captions manually. I wanted a faster workflow—so I built my own AI clipping software. This is just the beginning. More features coming soon. 👀",
-                "",
-                json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "SOFTWARE", "AI", "TOOL", "LINK", "ACCESS", "*"]),
-                "contains",
-                "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
-                "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
-                "Check your DMs! Just sent you the XenClips details.",
-                0,
-                "",
-                "",
-                1,
-                0
-            ),
-            (
-                "17927928345391328",
-                "https://www.instagram.com/reel/Db2mJTdh7uY/",
-                "Stop scrolling. Start creating. Every minute you spend consuming content grows at someone else's audience. Every clip you publish grows yours. Meet XenClips — a 100% local AI clipping software that's free, private, and lightning fast. No cloud. No subscriptions. Just AI-powered clipping on your own PC. Comment 'XENCLIPS' if you want early access.",
-                "",
-                json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "ACCESS", "LINK", "EARLY", "SEND", "*"]),
-                "contains",
-                "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
-                "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
-                "Check your DMs! Just sent you the XenClips details.",
-                0,
-                "",
-                "",
-                1,
-                0
-            )
-        ]
-        for v in xenclips_defaults:
-            conn.execute("""
-                INSERT OR IGNORE INTO video_automations 
-                (media_id, permalink, caption, thumbnail_url, keywords, match_type, reply_dm, reply_dm_2, public_reply, enable_follow_gate, follow_gate_message, unlocked_dm, is_active, is_upcoming)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, v)
+        # 1. Load from seed_data.json if present
+        seed_file = Path(__file__).parent / "seed_data.json"
+        loaded_seed = False
+        if seed_file.exists():
+            try:
+                with open(seed_file, "r", encoding="utf-8") as sf:
+                    seed_payload = json.load(sf)
+                
+                # Seed video automations
+                for a in seed_payload.get("video_automations", []):
+                    mid = str(a.get("media_id"))
+                    kws = a.get("keywords", [])
+                    kw_str = json.dumps(kws) if isinstance(kws, list) else str(kws)
+                    conn.execute("""
+                        INSERT OR REPLACE INTO video_automations 
+                        (media_id, permalink, caption, thumbnail_url, keywords, match_type, reply_dm, reply_dm_2, public_reply, enable_follow_gate, follow_gate_message, unlocked_dm, is_active, is_upcoming)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        mid,
+                        a.get("permalink", ""),
+                        a.get("caption", ""),
+                        a.get("thumbnail_url", ""),
+                        kw_str,
+                        a.get("match_type", "contains"),
+                        a.get("reply_dm", ""),
+                        a.get("reply_dm_2", ""),
+                        a.get("public_reply", ""),
+                        a.get("enable_follow_gate", 0),
+                        a.get("follow_gate_message", ""),
+                        a.get("unlocked_dm", ""),
+                        a.get("is_active", 1),
+                        a.get("is_upcoming", 0)
+                    ))
+
+                # Seed processed comments
+                for pc in seed_payload.get("processed_comments", []):
+                    cid = str(pc.get("comment_id"))
+                    conn.execute("""
+                        INSERT OR IGNORE INTO processed_comments
+                        (comment_id, media_id, username, comment_text, reply_sent, processed_at)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (
+                        cid,
+                        str(pc.get("media_id", "")),
+                        pc.get("username", ""),
+                        pc.get("comment_text", ""),
+                        pc.get("reply_sent", ""),
+                        pc.get("processed_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+                    ))
+                conn.commit()
+                loaded_seed = True
+            except Exception as e:
+                print(f"[DB SEED ERROR] {e}")
+
+        # 2. Hardcoded fallback for default XenClips automations
+        if not loaded_seed:
+            xenclips_defaults = [
+                (
+                    "18159554401483315",
+                    "https://www.instagram.com/reel/DbsJifchlUi/",
+                    "Stop scrolling. Start creating. Every minute you spend consuming content grows at someone else's audience. Every clip you publish grows yours. Meet XenClips — a 100% local AI clipping software that's free, private, and lightning fast. No cloud. No subscriptions. Just AI-powered clipping on your own PC. Comment 'XENCLIPS' if you want early access.",
+                    "",
+                    json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "ACCESS", "LINK", "EARLY", "SEND", "*"]),
+                    "contains",
+                    "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
+                    "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
+                    "Check your DMs! Just sent you the XenClips details.",
+                    0,
+                    "",
+                    "",
+                    1,
+                    0
+                ),
+                (
+                    "17907781038461021",
+                    "https://www.instagram.com/reel/Dbp5cpJhE08/",
+                    "🚀 Built this to solve my own problem. Most creators spend hours editing, trimming, and adding captions manually. I wanted a faster workflow—so I built my own AI clipping software. This is just the beginning. More features coming soon. 👀",
+                    "",
+                    json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "SOFTWARE", "AI", "TOOL", "LINK", "ACCESS", "*"]),
+                    "contains",
+                    "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
+                    "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
+                    "Check your DMs! Just sent you the XenClips details.",
+                    0,
+                    "",
+                    "",
+                    1,
+                    0
+                ),
+                (
+                    "17927928345391328",
+                    "https://www.instagram.com/reel/Db2mJTdh7uY/",
+                    "Stop scrolling. Start creating. Every minute you spend consuming content grows at someone else's audience. Every clip you publish grows yours. Meet XenClips — a 100% local AI clipping software that's free, private, and lightning fast. No cloud. No subscriptions. Just AI-powered clipping on your own PC. Comment 'XENCLIPS' if you want early access.",
+                    "",
+                    json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "ACCESS", "LINK", "EARLY", "SEND", "*"]),
+                    "contains",
+                    "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
+                    "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
+                    "Check your DMs! Just sent you the XenClips details.",
+                    0,
+                    "",
+                    "",
+                    1,
+                    0
+                )
+            ]
+            for v in xenclips_defaults:
+                conn.execute("""
+                    INSERT OR IGNORE INTO video_automations 
+                    (media_id, permalink, caption, thumbnail_url, keywords, match_type, reply_dm, reply_dm_2, public_reply, enable_follow_gate, follow_gate_message, unlocked_dm, is_active, is_upcoming)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, v)
 
         conn.commit()
 

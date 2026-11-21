@@ -6,10 +6,18 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
+concurrency:
+  group: mercury-cloud-poller
+  cancel-in-progress: false
+
 jobs:
   poll-comments:
+    name: Cloud Poller Execution
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - name: Trigger Mercury Polling Engine
         run: |
-          curl -f -sS -m 25 "https://mercury-bot-delta.vercel.app/api/cron/poll?limit=3" || true
+          echo "Triggering Mercury autonomous poller on Vercel..."
+          HTTP_RESPONSE=$(curl -sS -m 20 -w "\nHTTP_STATUS:%{http_code}" "https://mercury-bot-delta.vercel.app/api/cron/poll?limit=2" || true)
+          echo "$HTTP_RESPONSE"

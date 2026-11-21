@@ -16,16 +16,20 @@ from bot_engine import process_incoming_comment
 from database import is_comment_processed, get_all_processed_count
 
 
-def scan_recent_comments(limit_media: int = 5, dry_run: bool = False):
+ALWAYS_TARGET_REELS = ["18159554401483315", "17907781038461021", "17927928345391328"]
+
+
+def scan_recent_comments(limit_media: int = 3, dry_run: bool = False, max_batch: int = 4):
     """
     Scan all configured automation reels AND recent posts to guarantee 100% comment coverage.
     Ensures comments on older configured reels are NEVER missed.
+    Bounded by max_batch to guarantee lightning-fast serverless execution (<4s).
     """
     from database import get_video_automations
     print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Scanning media for incoming comments...")
     
-    # 1. ALWAYS include all active configured reels from DB
-    target_media_ids = set()
+    # 1. ALWAYS include all active configured reels and permanent XenClips reels
+    target_media_ids = set(ALWAYS_TARGET_REELS)
     try:
         automations = get_video_automations()
         for mid, auto in automations.items():
@@ -35,13 +39,14 @@ def scan_recent_comments(limit_media: int = 5, dry_run: bool = False):
         print(f"[POLL NOTICE] Error reading video automations: {e}")
 
     # 2. Also include recent media from Instagram
-    try:
-        media_list = get_recent_media(limit=limit_media)
-        for item in media_list:
-            if item.get("id"):
-                target_media_ids.add(str(item["id"]))
-    except Exception as e:
-        print(f"[POLL NOTICE] Error fetching recent media: {e}")
+    if limit_media > 0:
+        try:
+            media_list = get_recent_media(limit=limit_media)
+            for item in media_list:
+                if item.get("id"):
+                    target_media_ids.add(str(item["id"]))
+        except Exception as e:
+            print(f"[POLL NOTICE] Error fetching recent media: {e}")
 
     if not target_media_ids:
         print("No media IDs found to scan.")
@@ -49,7 +54,7 @@ def scan_recent_comments(limit_media: int = 5, dry_run: bool = False):
 
     new_comments_count = 0
 
-    # Fetch comments for all target media in parallel for ultra-fast serverless execution (<3s)
+    # Fetch comments for all target media in parallel for ultra-fast serverless execution (<2s)
     import concurrent.futures
     def fetch_comments_safe(mid):
         try:
@@ -57,7 +62,7 @@ def scan_recent_comments(limit_media: int = 5, dry_run: bool = False):
         except Exception as e:
             return mid, []
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         media_comments_results = list(executor.map(fetch_comments_safe, list(target_media_ids)))
 
     for media_id, comments in media_comments_results:
@@ -90,6 +95,10 @@ def scan_recent_comments(limit_media: int = 5, dry_run: bool = False):
                     print(f"   Result: {res.get('status')}")
                 else:
                     print("   [DRY RUN] Would send automated DM and public reply.")
+
+                if new_comments_count >= max_batch:
+                    print(f"[POLL NOTICE] Reached max batch of {max_batch} comments. Yielding execution.")
+                    return new_comments_count
 
     return new_comments_count
 
