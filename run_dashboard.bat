@@ -9,5 +9,5 @@ echo Opening your browser to the Aesthetic 2D Dashboard...
 echo.
 
 start "" "http://localhost:8000/"
-"X:\Softwares\Python\python.exe" "X:\Millionaire\ForgeBot\server.py"
+python "%~dp0server.py"
 pause

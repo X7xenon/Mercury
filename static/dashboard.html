@@ -1583,6 +1583,16 @@
       }
     }
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function renderLogsTable(logs) {
       const tbody = document.getElementById('logsTableBody');
       if (!logs.length) {
@@ -1591,25 +1601,30 @@
       }
 
       tbody.innerHTML = logs.map(c => {
+        const safeUser = escapeHtml(c.username);
+        const safeText = escapeHtml(c.comment_text);
+        const safeReply = escapeHtml(c.reply_sent);
+        const safeMedia = escapeHtml(c.media_id || '--');
+        const safeCid = escapeHtml(c.comment_id);
         return `
           <tr class="hover:bg-charcoal-850/60 transition-colors">
             <td class="py-3.5 px-5 font-mono font-medium text-[#C9D6E8]">
-              <span class="text-[#8B6CFF]">@</span>${c.username}
+              <span class="text-[#8B6CFF]">@</span>${safeUser}
             </td>
-            <td class="py-3.5 px-5 text-coolgray-200 max-w-xs truncate" title="${c.comment_text}">
-              "${c.comment_text}"
+            <td class="py-3.5 px-5 text-coolgray-200 max-w-xs truncate" title="${safeText}">
+              "${safeText}"
             </td>
-            <td class="py-3.5 px-5 font-mono text-[11px] text-[#C9D6E8] max-w-xs truncate" title="${c.reply_sent}">
-              ${c.reply_sent}
+            <td class="py-3.5 px-5 font-mono text-[11px] text-[#C9D6E8] max-w-xs truncate" title="${safeReply}">
+              ${safeReply}
             </td>
             <td class="py-3.5 px-5 font-mono text-[11px] text-coolgray-400">
-              ${c.media_id || '--'}
+              ${safeMedia}
             </td>
             <td class="py-3.5 px-5 font-mono text-[11px] text-coolgray-500 whitespace-nowrap">
               ${(c.processed_at || '').slice(0, 16)}
             </td>
             <td class="py-3.5 px-5 text-right">
-              <button onclick="deleteLogItem('${c.comment_id}')" class="text-[11px] font-mono text-coolgray-400 hover:text-[#FF4D6D] transition-colors">
+              <button onclick="deleteLogItem('${safeCid}')" class="text-[11px] font-mono text-coolgray-400 hover:text-[#FF4D6D] transition-colors">
                 Clear
               </button>
             </td>

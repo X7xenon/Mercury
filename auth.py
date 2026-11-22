@@ -10,9 +10,9 @@ import time
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
 
-# Default credentials (can be overridden via environment variables)
+# Credentials loaded strictly from environment variables
 DEFAULT_USERNAME = os.getenv("DASHBOARD_USERNAME", "theabeerkumar").strip()
-DEFAULT_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "Radh@15soami").strip()
+DEFAULT_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "").strip()
 AUTH_SECRET = os.getenv("AUTH_SECRET", "Mercury_Auth_Secret_Key_Secure_9988").encode("utf-8")
 COOKIE_NAME = "mercury_session"
 SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30  # 30 days
@@ -22,6 +22,10 @@ def verify_credentials(username: str, password: str) -> bool:
     """Verifies username and password against environment variables."""
     target_user = os.getenv("DASHBOARD_USERNAME", DEFAULT_USERNAME).strip()
     target_pass = os.getenv("DASHBOARD_PASSWORD", DEFAULT_PASSWORD).strip()
+    
+    if not target_pass:
+        print("[AUTH WARNING] DASHBOARD_PASSWORD environment variable is not set!")
+        return False
     
     # Constant-time comparison to prevent timing attacks
     user_ok = hmac.compare_digest(username.strip(), target_user)

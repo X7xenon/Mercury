@@ -7,5 +7,5 @@ echo.
 echo Starting Mercury in Autonomous Polling Mode...
 echo Webhook server & Dashboard available via: run_dashboard.bat
 echo.
-"X:\Softwares\Python\python.exe" "X:\Millionaire\ForgeBot\poll_engine.py"
+python "%~dp0poll_engine.py"
 pause

@@ -21,10 +21,8 @@ IG_BUSINESS_ACCOUNT_ID = os.getenv("IG_BUSINESS_ACCOUNT_ID", "17841415119954802"
 GRAPH_API_VERSION = "v21.0"
 BASE_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
 
-# SSL Context
+# SSL Context with standard certificate verification
 ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
 
 
 def _request(endpoint: str, method: str = "GET", payload: dict = None) -> dict:

@@ -56,6 +56,11 @@ TOTAL_SCANS = 0
 COMMENTS_REPLIED_SESSION = 0
 POLL_INTERVAL_SECONDS = 45
 
+_STATS_LOCK = threading.Lock()
+_POLL_LOCK = threading.Lock()
+_LAST_POLL_TIME = 0.0
+MIN_POLL_INTERVAL_SECONDS = 15.0
+
 
 def autonomous_polling_worker():
     global LAST_SCAN_AT, TOTAL_SCANS, COMMENTS_REPLIED_SESSION
@@ -63,21 +68,25 @@ def autonomous_polling_worker():
     time.sleep(3)  # Brief warmup
     while True:
         try:
-            if REPLIER_ACTIVE:
-                TOTAL_SCANS += 1
-                LAST_SCAN_AT = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+            with _STATS_LOCK:
+                is_active = REPLIER_ACTIVE
+            if is_active:
                 new_found = poll_engine.scan_recent_comments(limit_media=12, dry_run=False)
-                if new_found > 0:
-                    COMMENTS_REPLIED_SESSION += new_found
-                    print(f"[AUTONOMOUS REPLIER] {new_found} new comment(s) processed.")
+                with _STATS_LOCK:
+                    TOTAL_SCANS += 1
+                    LAST_SCAN_AT = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+                    if new_found > 0:
+                        COMMENTS_REPLIED_SESSION += new_found
+                        print(f"[AUTONOMOUS REPLIER] {new_found} new comment(s) processed.")
         except Exception as e:
             print(f"[AUTONOMOUS REPLIER ERROR] {e}")
         time.sleep(POLL_INTERVAL_SECONDS)
 
 
-# Start autonomous daemon thread
-_polling_thread = threading.Thread(target=autonomous_polling_worker, daemon=True)
-_polling_thread.start()
+# Start autonomous daemon thread (local environment)
+if not os.getenv("VERCEL"):
+    _polling_thread = threading.Thread(target=autonomous_polling_worker, daemon=True)
+    _polling_thread.start()
 
 
 # -------------------------------------------------------------
@@ -418,22 +427,47 @@ async def save_triggers(request: Request, payload: dict = Body(...)):
 
 
 @app.get("/api/cron/poll")
-def cron_poll(limit: int = 2):
+def cron_poll(request: Request, limit: int = 2):
     """
     Vercel Cron endpoint: triggered automatically by Vercel scheduler or external ping
-    to poll for incoming comments on serverless deployment (kept ultra-fast for serverless timeout).
+    to poll for incoming comments on serverless deployment.
+    Protected with debouncing and optional CRON_SECRET verification.
     """
-    t0 = time.time()
-    processed = poll_engine.scan_recent_comments(limit_media=limit, dry_run=False, max_batch=3)
-    elapsed = round(time.time() - t0, 2)
-    return {
-        "status": "success",
-        "processed_comments": processed,
-        "duration_seconds": elapsed,
-        "total_in_db": database.get_all_processed_count(),
-        "active_automations": len(database.get_video_automations()),
-        "scanned_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-    }
+    global _LAST_POLL_TIME
+    now = time.time()
+
+    # Optional CRON_SECRET verification if set in environment
+    cron_secret = os.getenv("CRON_SECRET", "").strip()
+    if cron_secret:
+        auth_header = request.headers.get("Authorization", "")
+        param_secret = request.query_params.get("secret", "")
+        if auth_header != f"Bearer {cron_secret}" and param_secret != cron_secret:
+            raise HTTPException(status_code=401, detail="Unauthorized: Invalid cron secret")
+
+    # Debounce protection: minimum 15 seconds between runs to protect Meta rate limits
+    if (now - _LAST_POLL_TIME) < MIN_POLL_INTERVAL_SECONDS:
+        return {
+            "status": "debounced",
+            "message": "Scan recently completed. Meta API rate limit protected.",
+            "duration_seconds": 0.0,
+            "total_in_db": database.get_all_processed_count(),
+            "active_automations": len(database.get_video_automations()),
+            "scanned_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        }
+
+    with _POLL_LOCK:
+        _LAST_POLL_TIME = now
+        t0 = time.time()
+        processed = poll_engine.scan_recent_comments(limit_media=limit, dry_run=False, max_batch=3)
+        elapsed = round(time.time() - t0, 2)
+        return {
+            "status": "success",
+            "processed_comments": processed,
+            "duration_seconds": elapsed,
+            "total_in_db": database.get_all_processed_count(),
+            "active_automations": len(database.get_video_automations()),
+            "scanned_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        }
 
 
 # -------------------------------------------------------------
