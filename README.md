@@ -16,6 +16,8 @@
 
 ## ⚡ What is Mercury?
 
+> 📖 **Full Step-by-Step Documentation:** For an exhaustive walkthrough covering Meta Developer setup, System User permanent tokens, webhooks, and cloud deployment, read the [Complete Setup & Deployment Guide](docs/FULL_SETUP_GUIDE.md).
+
 **Mercury** is an autonomous, self-hosted Instagram automation platform and growth studio designed to completely eliminate monthly ManyChat subscription costs ($50–$300+/month). Built directly on Meta's official Graph API v21.0, Mercury operates with zero external SaaS dependencies, guarantees zero ban flags through safe jitter rate-limiting, and delivers private replies in under 1.2 seconds.
 
 ### 🌟 Key Capabilities
