@@ -151,8 +151,8 @@ Mercury requires two numeric IDs to route messages accurately:
 
 ### 5.1 Clone the Codebase
 ```bash
-git clone https://github.com/X7xenon/ForgeBot.git
-cd ForgeBot
+git clone https://github.com/X7xenon/Mercury.git
+cd Mercury
 ```
 
 ### 5.2 Install Python Dependencies

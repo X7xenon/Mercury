@@ -51,8 +51,8 @@ Mercury features a 2D aesthetic inspired by Japanese ink wash minimalism and mod
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/X7xenon/ForgeBot.git
-cd ForgeBot
+git clone https://github.com/X7xenon/Mercury.git
+cd Mercury
 ```
 
 ### 2. Install Dependencies
