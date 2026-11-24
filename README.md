@@ -1,72 +1,171 @@
 # ☿ Mercury: Autonomous Meta & Instagram Growth Platform
-> **In-House ManyChat Replacement with 2D Gallery Dashboard, Video-Specific Automations & Performance Tracker**
 
-**Author:** Abeer Kumar (`@theabeerkumar`)  
-**Ecosystem:** The Forge Community (`https://discord.gg/ARxXmTmAV2`)  
-**Status:** 100% Operational & Verified with Meta Graph API v21.0  
-**Aesthetic Style:** Charcoal Black, Cool Gray & Soft Ivory (Ink Wash + Silver & Subtle Gold Sparkle, Pure 2D)
+<p align="center">
+  <b>The In-House, Zero-Subscription ManyChat Alternative for Creators, Developers & Agencies.</b><br>
+  Built with FastAPI, SQLite, and Meta Graph API v21.0. Featuring an Aesthetic 2D Studio Dashboard.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Meta_Graph_API-v21.0-8B6CFF?style=flat-square&logo=meta" alt="Meta Graph API v21.0">
+  <img src="https://img.shields.io/badge/Python-3.9+-08080B?style=flat-square&logo=python" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/FastAPI-2.0.0-009688?style=flat-square&logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/License-MIT-C6FF3D?style=flat-square" alt="MIT License">
+</p>
 
 ---
 
 ## ⚡ What is Mercury?
-**Mercury** is an in-house, zero-subscription automation engine and growth dashboard that connects directly to Meta's official Graph API v21.0. It eliminates ManyChat monthly fees and automates:
 
-1. **Reel/Video-Specific Automations:** Select any uploaded Instagram reel or pre-configure an **Upcoming Video** to dispatch custom personalized private DMs and algorithm-boosting public comments.
-2. **Comment-to-DM (Private Replies):** High-speed direct messaging triggered when users comment trigger words (or wildcard `*` for any comment).
-3. **Performance & Growth Tracker:** Live metrics on total DMs dispatched, comment followup rate, average response latency (~1.1s), unique creators reached, and estimated hours saved.
-4. **Trigger Sandbox:** Interactive test bench to evaluate comments in real-time and preview personalized `{username}` interpolation.
-5. **Anti-Flag & Safe Delivery:** Zero ban flags with randomized jitter and compliant Meta Graph endpoints.
+**Mercury** is an autonomous, self-hosted Instagram automation platform and growth studio designed to completely eliminate monthly ManyChat subscription costs ($50–$300+/month). Built directly on Meta's official Graph API v21.0, Mercury operates with zero external SaaS dependencies, guarantees zero ban flags through safe jitter rate-limiting, and delivers private replies in under 1.2 seconds.
 
----
+### 🌟 Key Capabilities
 
-## 🎨 Design & Aesthetic Language
-Inspired by high-contrast ink wash art and modular geometric constructivist typography (`Trapvoid` / `Unbounded` / `Syne`):
-* **Charcoal Black:** `#08080B` to `#14151D` deep canvas.
-* **Cool Gray:** `#43495A` to `#7F869A` hairline frames and metadata badges.
-* **Soft Ivory:** `#FAF9F5` to `#E5E0D3` high-contrast crisp typography.
-* **Subtle Sparkle:** Refined metallic silver with gentle gold highlights (`#E5C07B`, `#D4AF37`).
-* **Pure 2D Architecture:** Absolutely zero 3D clutter, razor-sharp geometric balance.
+1. **Reel & Video-Specific Automations:** Browse your uploaded reels or pre-configure an **Upcoming Video Preset** with tailored keywords, dual-message private DM sequences, and algorithm-boosting public replies.
+2. **Interactive Credentials & Tokens Panel:** Configure custom Meta Page Access Tokens, Instagram Business Account IDs, Page IDs, and dashboard passwords directly from the UI with an instant **"Test Connection"** diagnostic tool.
+3. **Smart Follow-Gate Engine:** Ask commenters to follow your Instagram account first. When they follow and reply `FOLLOWED`, Mercury unlocks and dispatches their exclusive link automatically.
+4. **Autonomous Local Polling & Webhooks:** Run 100% locally with zero open ports via the lightning-fast multithreaded polling daemon, or connect live Meta Webhooks for instantaneous real-time event dispatching.
+5. **Interactive Trigger Sandbox:** Test your triggers, simulate user comments, and preview `{username}` token formatting in real-time before going live.
+6. **Performance & Analytics Studio:** Track total DMs sent, comments replied, unique creators reached, and estimated hours saved with 2D activity volume charts.
+7. **Meta Terms Compliant:** Includes official Data Deletion & Privacy Policy routes (`/privacy`) and anti-flag jitter protection.
 
 ---
 
-## 🚀 How to Run
+## 🎨 Visual Design Language
 
-### 1. Launch Aesthetic 2D Dashboard & Server
-Double-click `run_dashboard.bat` or run:
-```powershell
-python X:\Millionaire\ForgeBot\server.py
-```
-* Opens the live dashboard in your browser at: **`http://localhost:8000/`**
-* Manage uploaded videos, upcoming reel presets, live logs, and performance graphs.
-
-### 2. Autonomous Local Polling Worker
-Double-click `run_bot.bat` or run:
-```powershell
-python X:\Millionaire\ForgeBot\poll_engine.py
-```
-* Scans latest reels/posts every 60s for new comments and dispatches instant DMs.
-* Runs 100% locally with zero server hosting or ngrok required.
-
-### 3. Live Webhook Mode (Instant Real-Time Events)
-* Webhook endpoint: `http://localhost:8000/webhook`
-* Verify Token: `Mercury_Secret_Verify_Token_2026` (or `ForgeBot_Secret_Verify_Token_2026`)
+Mercury features a 2D aesthetic inspired by Japanese ink wash minimalism and modular geometric constructivism:
+* **Charcoal Canvas:** `#08080B` to `#14151D` deep matte backgrounds.
+* **Soft Ivory:** `#FAF9F5` crisp high-contrast typography.
+* **Cool Gray:** `#43495A` to `#7F869A` hairline frames and structural borders.
+* **Accent Purple:** `#8B6CFF` glowing interactive highlights and focus rings.
+* **Neon Lime:** `#C6FF3D` status indicator for online Meta Graph API handshakes.
 
 ---
 
-## 🛠️ Architecture & Components
+## 🚀 Quick Start Guide
 
+### Prerequisites
+* Python 3.9 or higher installed on your machine.
+* A Meta Developer Account with a Facebook Page connected to an Instagram Professional/Creator account.
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/X7xenon/ForgeBot.git
+cd ForgeBot
 ```
-X:\Millionaire\ForgeBot\
-├── static/
-│   └── dashboard.html    # 2D Aesthetic Gallery Dashboard (Charcoal, Ivory, Trapvoid/Unbounded typography)
-├── .env                  # Meta Permanent Access Token, Page ID, IG ID
-├── triggers.json         # Global fallback keyword rules
-├── database.py           # SQLite manager (video_automations, processed_comments, performance)
-├── bot_engine.py         # Priority matcher (Reel-specific first -> Global fallback)
-├── meta_api.py           # Meta Graph API v21.0 client with thumbnail & media support
-├── poll_engine.py        # Autonomous scanner worker
-├── server.py             # FastAPI Webhook & REST API server
-├── run_dashboard.bat     # 1-Click Dashboard launcher
-├── run_bot.bat           # 1-Click Polling worker launcher
-└── README.md             # Documentation
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
 ```
+
+### 3. Launch Dashboard & Server
+```bash
+# Windows 1-Click Launcher:
+run_dashboard.bat
+
+# Or via Command Line:
+python server.py
+```
+
+* Open your browser at **`http://localhost:8000/`**
+* Default Operator Username: `admin` (or configured in `.env`)
+* Set your password in `.env` (`DASHBOARD_PASSWORD`) or configure it directly in the **Credentials & Tokens** tab.
+
+### 4. Optional: Run Autonomous Local Polling Daemon
+If you don't have a public HTTPS domain for webhooks, Mercury can poll Meta Graph API locally:
+```bash
+# Windows 1-Click Launcher:
+run_bot.bat
+
+# Or via Command Line:
+python poll_engine.py
+```
+
+---
+
+## 🔑 Adding Custom Tokens & Meta Setup
+
+Mercury allows you to input your credentials directly inside the Dashboard under **`Credentials & Tokens`** or via `.env`:
+
+### Step 1: Create Meta Developer App
+1. Go to [Meta for Developers](https://developers.facebook.com/) and click **Create App**.
+2. Select **Business** as the app type.
+3. Add the **Instagram Graph API** product to your app.
+
+### Step 2: Generate Permanent Page Access Token
+1. Go to **Meta Business Suite** > **Settings** > **System Users**.
+2. Create a System User (role: Admin) and click **Generate Token**.
+3. Select your app and grant the following permissions:
+   * `instagram_basic`
+   * `instagram_manage_comments`
+   * `instagram_manage_messages`
+   * `pages_manage_metadata`
+   * `pages_read_engagement`
+4. Copy the permanent access token (starts with `EAAY...` or `EAA...`).
+
+### Step 3: Enter Credentials in Mercury
+1. Open the Mercury Dashboard (`http://localhost:8000`).
+2. Navigate to **`Credentials & Tokens`** in the sidebar.
+3. Paste your **Page Access Token**, **Instagram Business Account ID**, and **Facebook Page ID**.
+4. Click **Test Connection** to verify with Meta Graph API in real-time.
+5. Click **Save Credentials**. All changes apply immediately without restarting!
+
+---
+
+## ⚙️ Configuration Reference (`.env.example`)
+
+You can also pre-seed your configuration using environment variables:
+
+```bash
+# Meta Graph API Credentials
+PAGE_ACCESS_TOKEN=your_permanent_page_access_token_here
+PAGE_ID=your_facebook_page_id_here
+IG_BUSINESS_ACCOUNT_ID=your_instagram_business_account_id_here
+APP_ID=your_meta_app_id_here
+
+# Webhook Handshake Security
+WEBHOOK_VERIFY_TOKEN=Mercury_Secret_Verify_Token_2026
+PORT=8000
+
+# Profile & Community Customization
+IG_USERNAME=your_instagram_handle
+DISCORD_INVITE_URL=https://discord.gg/your-community
+
+# Dashboard Operator Security
+DASHBOARD_USERNAME=admin
+DASHBOARD_PASSWORD=YourSecurePassword123!
+AUTH_SECRET=Mercury_Auth_Secret_Key_Secure_9988
+```
+
+---
+
+## 🌐 Webhook Configuration (Real-Time Mode)
+
+For zero-latency instantaneous comment replies:
+1. In Meta App Dashboard, go to **Webhooks** > **Instagram**.
+2. Set **Callback URL**: `https://<your-domain-or-tunnel>/webhook`
+3. Set **Verify Token**: `Mercury_Secret_Verify_Token_2026` (or custom token from Settings).
+4. Subscribe to the **`comments`** and **`messages`** fields.
+
+---
+
+## ☁️ Serverless Deployment (Vercel)
+
+Mercury includes pre-configured serverless handlers for Vercel:
+* `vercel.json` and `api/index.py` (via `Mangum`) are ready to deploy.
+* Continuous 24/7 comment polling is supported via GitHub Actions workflow (`.github/workflows/mercury-cron.yml`).
+
+---
+
+## 🔒 Security & Privacy
+
+* **Zero Hardcoded Secrets:** Tokens and credentials are never stored in git.
+* **Token Masking:** The REST API and Settings UI always return masked tokens (`EAAY••••••••••••••••3zwL`) to prevent credential leakage.
+* **Constant-Time Verification:** Login credentials use HMAC constant-time comparisons to prevent timing attacks.
+* **Data Deletion Endpoint:** Meta-compliant data purge route at `/privacy`.
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See `LICENSE` for details. Built for builders, creators, and open-source growth hackers.

@@ -15,9 +15,6 @@ from dotenv import load_dotenv
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-PAGE_ACCESS_TOKEN = os.getenv("PAGE_ACCESS_TOKEN")
-PAGE_ID = os.getenv("PAGE_ID", "1306178772583899")
-IG_BUSINESS_ACCOUNT_ID = os.getenv("IG_BUSINESS_ACCOUNT_ID", "17841415119954802")
 GRAPH_API_VERSION = "v21.0"
 BASE_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
 
@@ -25,10 +22,70 @@ BASE_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
 ctx = ssl.create_default_context()
 
 
+def get_page_access_token() -> str:
+    """Dynamically resolves the Meta Page Access Token from SQLite settings or environment."""
+    try:
+        import database
+        val = database.get_setting("PAGE_ACCESS_TOKEN")
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.getenv("PAGE_ACCESS_TOKEN", "").strip()
+
+
+def get_page_id() -> str:
+    """Dynamically resolves the Facebook Page ID from SQLite settings or environment."""
+    try:
+        import database
+        val = database.get_setting("PAGE_ID")
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.getenv("PAGE_ID", "").strip()
+
+
+def get_ig_account_id() -> str:
+    """Dynamically resolves the Instagram Business Account ID from SQLite settings or environment."""
+    try:
+        import database
+        val = database.get_setting("IG_BUSINESS_ACCOUNT_ID")
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.getenv("IG_BUSINESS_ACCOUNT_ID", "").strip()
+
+
+def get_ig_username() -> str:
+    """Dynamically resolves the Instagram handle for links & profile badges."""
+    try:
+        import database
+        val = database.get_setting("IG_USERNAME")
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.getenv("IG_USERNAME", os.getenv("DASHBOARD_USERNAME", "your_instagram_handle")).strip()
+
+
+# Backward-compatible property-like module getters
+def __getattr__(name):
+    if name == "PAGE_ACCESS_TOKEN":
+        return get_page_access_token()
+    elif name == "PAGE_ID":
+        return get_page_id()
+    elif name == "IG_BUSINESS_ACCOUNT_ID":
+        return get_ig_account_id()
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
 def _request(endpoint: str, method: str = "GET", payload: dict = None) -> dict:
     url = f"{BASE_URL}/{endpoint}"
     separator = "&" if "?" in url else "?"
-    url_with_token = f"{url}{separator}access_token={PAGE_ACCESS_TOKEN}"
+    token = get_page_access_token()
+    url_with_token = f"{url}{separator}access_token={token}"
 
     headers = {
         "User-Agent": "Mercury/1.0",
@@ -58,7 +115,10 @@ def _request(endpoint: str, method: str = "GET", payload: dict = None) -> dict:
 
 def get_recent_media(limit: int = 25) -> list:
     """Fetch recent posts and reels from the Instagram business account."""
-    endpoint = f"{IG_BUSINESS_ACCOUNT_ID}/media?fields=id,caption,media_type,thumbnail_url,media_url,permalink,timestamp,comments_count,like_count&limit={limit}"
+    ig_id = get_ig_account_id()
+    if not ig_id:
+        return []
+    endpoint = f"{ig_id}/media?fields=id,caption,media_type,thumbnail_url,media_url,permalink,timestamp,comments_count,like_count&limit={limit}"
     res = _request(endpoint)
     data = res.get("data")
     return data if isinstance(data, list) else []
@@ -78,7 +138,10 @@ def send_private_reply(comment_id: str, message_text: str) -> dict:
     Official Meta Private Replies API:
     POST /{PAGE_ID}/messages with recipient: { comment_id }
     """
-    endpoint = f"{PAGE_ID}/messages"
+    page_id = get_page_id()
+    if not page_id:
+        return {"error": 400, "message": "PAGE_ID not configured."}
+    endpoint = f"{page_id}/messages"
     payload = {
         "recipient": {
             "comment_id": comment_id
@@ -101,7 +164,10 @@ def reply_to_comment(comment_id: str, reply_text: str) -> dict:
 
 def send_direct_message(recipient_id: str, message_text: str) -> dict:
     """Send a direct message in an open 24-hour window."""
-    endpoint = f"{PAGE_ID}/messages"
+    page_id = get_page_id()
+    if not page_id:
+        return {"error": 400, "message": "PAGE_ID not configured."}
+    endpoint = f"{page_id}/messages"
     payload = {
         "recipient": {
             "id": recipient_id
@@ -135,7 +201,10 @@ def send_private_reply_with_buttons(comment_id: str, text: str, buttons: list = 
     Attempts to send a Button Template private reply to an Instagram comment.
     Falls back gracefully to plain text if template is rejected by Meta endpoint.
     """
-    endpoint = f"{PAGE_ID}/messages"
+    page_id = get_page_id()
+    if not page_id:
+        return {"error": 400, "message": "PAGE_ID not configured."}
+    endpoint = f"{page_id}/messages"
     if buttons:
         payload = {
             "recipient": {
@@ -160,12 +229,13 @@ def send_private_reply_with_buttons(comment_id: str, text: str, buttons: list = 
     return send_private_reply(comment_id=comment_id, message_text=text)
 
 
-def send_follow_gate_message(comment_id: str, text: str, account_username: str = "theabeerkumar", user_id: str = None) -> dict:
+def send_follow_gate_message(comment_id: str, text: str, account_username: str = None, user_id: str = None) -> dict:
     """
     Sends an interactive Follow-Gate card with a direct 'Follow @username' button.
     Tapping the button immediately redirects the user to the Instagram profile within the app.
     Falls back gracefully to clean formatted text link if templates are restricted.
     """
+    account_username = account_username or get_ig_username()
     profile_url = f"https://www.instagram.com/{account_username}/"
     buttons = [
         {
@@ -177,7 +247,8 @@ def send_follow_gate_message(comment_id: str, text: str, account_username: str =
 
     # 1. If 24-hr session exists for user_id, try Generic Template card
     if user_id:
-        endpoint = f"{PAGE_ID}/messages"
+        page_id = get_page_id()
+        endpoint = f"{page_id}/messages"
         payload = {
             "recipient": {"id": user_id},
             "message": {

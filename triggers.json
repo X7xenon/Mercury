@@ -1,50 +1,32 @@
 {
   "rules": [
     {
-      "keywords": ["XENCLIPS", "XEN CLIPS", "XEN"],
+      "keywords": ["DEMO", "START", "TRY"],
       "match_type": "contains",
-      "reply_dm": "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.\n\nThanks for the support!\n\nAlso, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together.\n\nWould love to have you join us!\n\nJoin here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
-      "public_reply": "Check your DMs! Just sent you the XenClips details."
+      "reply_dm": "Hey {username}! Thanks for checking out Mercury Automation!\n\nHere is your requested guide and demo link:\nhttps://github.com/your-repo/demo\n\nYou can easily customize this rule or add video-specific automations in the Mercury Dashboard!\n\nHappy building!",
+      "public_reply": "Check your DMs! Just sent you the details."
     },
     {
-      "keywords": ["LINK", "PHOTOCRAFT", "REPO"],
+      "keywords": ["LINK", "RESOURCES", "GUIDE"],
       "match_type": "contains",
-      "reply_dm": "Hey {username}! Here is the GitHub repository link you requested: https://github.com/theabeerkumar/photocraft\n\nAlso make sure to join 'The Forge' — our private creator & tech community on Discord: https://discord.gg/ARxXmTmAV2",
+      "reply_dm": "Hey {username}! Here is the resource link you requested: https://github.com/your-repo/resources\n\nMake sure to join our creator community on Discord: https://discord.gg/your-community",
       "public_reply": "Check your DMs! Just sent you the link."
     },
     {
-      "keywords": ["RES", "REVERSE", "GHIDRA"],
+      "keywords": ["COMMUNITY", "DISCORD", "FORGE"],
       "match_type": "contains",
-      "reply_dm": "Hey {username}! Here are the reverse engineering & AI agent resources: https://github.com/theabeerkumar/rea\n\nCome hang out and build with us in 'The Forge' Discord: https://discord.gg/ARxXmTmAV2",
-      "public_reply": "Sent the resources to your DMs!"
+      "reply_dm": "Hey {username}! Come hang out and build with us in our community on Discord: https://discord.gg/your-community\n\nLooking forward to seeing what you create!",
+      "public_reply": "Community invite sent to your DMs!"
     },
     {
-      "keywords": ["AI", "ANTIGRAVITY", "WORKFLOW"],
+      "keywords": ["WORKFLOW", "AI", "AUTOMATION"],
       "match_type": "contains",
-      "reply_dm": "Hey {username}! Here is the complete Antigravity agent workflow & automation setup: https://github.com/theabeerkumar\n\nConnect with other AI builders inside 'The Forge': https://discord.gg/ARxXmTmAV2",
-      "public_reply": "Workflow sent to your DMs! Check requests."
-    },
-    {
-      "keywords": ["STARTUP", "FOUNDER", "COURSES"],
-      "match_type": "contains",
-      "reply_dm": "Hey {username}! Here is the curated list of 3 founder courses & playbooks: https://discord.gg/ARxXmTmAV2\n\nAll startup guides & notes are pinned in the #project-showcase channel of The Forge!",
-      "public_reply": "List delivered to your DMs!"
-    },
-    {
-      "keywords": ["FORGE", "DISCORD", "COMMUNITY"],
-      "match_type": "contains",
-      "reply_dm": "Welcome to 'The Forge'! Here is your official community invite: https://discord.gg/ARxXmTmAV2\n\nSee you inside the channels!",
-      "public_reply": "Invite link sent to your DMs! See you in The Forge."
-    },
-    {
-      "keywords": ["AUDIOBOOK", "CHANAKYA", "OSHO", "BOOK"],
-      "match_type": "contains",
-      "reply_dm": "Hey {username}! Here is our latest master audiobook release ('Chanakya Niti: 100+ Sutras') on 'The Audio Syllabus': https://youtu.be/Npjg27iny9U\n\nFor full transcripts & discussion, join The Forge: https://discord.gg/ARxXmTmAV2",
-      "public_reply": "Audiobook link sent to your DMs!"
+      "reply_dm": "Hey {username}! Here is the complete workflow & automation guide: https://github.com/your-repo/workflow\n\nConnect with other creators in our community: https://discord.gg/your-community",
+      "public_reply": "Workflow guide sent to your DMs! Check requests."
     }
   ],
   "default_rule": {
-    "reply_dm": "Hey {username}! Thanks for commenting. If you are looking for our project repos, AI workflows, or audiobooks, join 'The Forge' community: https://discord.gg/ARxXmTmAV2",
-    "public_reply": "Sent you a DM with details!"
+    "reply_dm": "Hey {username}! Thanks for reaching out. Check out our latest project links and resources here: https://github.com/your-repo",
+    "public_reply": "Sent you a DM! Check your inbox."
   }
 }

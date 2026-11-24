@@ -17,7 +17,15 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: Trigger Mercury Polling Engine
+        env:
+          MERCURY_APP_URL: ${{ secrets.MERCURY_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          echo "Triggering Mercury autonomous poller on Vercel..."
-          HTTP_RESPONSE=$(curl -sS -m 20 -w "\nHTTP_STATUS:%{http_code}" "https://mercury-bot-delta.vercel.app/api/cron/poll?limit=2" || true)
+          TARGET_URL="${MERCURY_APP_URL:-https://your-mercury-app.vercel.app}/api/cron/poll?limit=2"
+          AUTH_HEADER=""
+          if [ -n "$CRON_SECRET" ]; then
+            AUTH_HEADER="-H \"Authorization: Bearer $CRON_SECRET\""
+          fi
+          echo "Triggering Mercury autonomous poller on $TARGET_URL..."
+          HTTP_RESPONSE=$(curl -sS -m 20 -w "\nHTTP_STATUS:%{http_code}" $AUTH_HEADER "$TARGET_URL" || true)
           echo "$HTTP_RESPONSE"

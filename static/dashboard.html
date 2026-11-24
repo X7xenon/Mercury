@@ -196,6 +196,11 @@
             <span>Activity Stream</span>
           </button>
 
+          <button onclick="navTo('settings')" id="sideNav-settings" class="w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all text-coolgray-400 hover:text-ivory-100 hover:bg-charcoal-900 hairline-border hover:border-coolgray-700">
+            <span>Credentials & Tokens</span>
+            <span class="text-[9px] font-mono text-[#8B6CFF] bg-[#8B6CFF]/15 px-1.5 py-0.5 rounded">CONFIG</span>
+          </button>
+
         </nav>
       </div>
 
@@ -212,7 +217,7 @@
       </div>
       <div class="flex justify-between">
         <span class="text-coolgray-400">Connected</span>
-        <span class="text-ivory-200">@theabeerkumar</span>
+        <span id="sideFooterAccount" class="text-ivory-200">Loading...</span>
       </div>
       <div class="flex justify-between">
         <span class="text-coolgray-400">Safe Jitter</span>
@@ -670,6 +675,219 @@
 
     </section>
 
+    <!-- ============================================================ -->
+    <!-- TAB 6: CREDENTIALS & SETTINGS (CUSTOM TOKENS)                -->
+    <!-- ============================================================ -->
+    <section id="tab-settings" class="tab-pane hidden space-y-6">
+      
+      <!-- Back Navigation Header -->
+      <div class="flex items-center justify-between pb-2">
+        <button onclick="navTo('videos')" class="text-xs font-mono text-coolgray-400 hover:text-[#8B6CFF] flex items-center space-x-1.5 transition-colors cursor-pointer">
+          <span>&larr;</span>
+          <span>Back to Video Automations</span>
+        </button>
+        <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-[#8B6CFF] bg-[#8B6CFF]/15 px-2.5 py-1 rounded-full border border-[#8B6CFF]/30">
+          Environment & Credentials
+        </span>
+      </div>
+
+      <!-- Settings Header Banner -->
+      <div class="poster-card p-6 bg-charcoal-900/90 relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-[#8B6CFF]/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+          <div>
+            <div class="flex items-center space-x-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#8B6CFF] shadow-[0_0_10px_#8B6CFF]"></span>
+              <h2 class="font-display font-black text-xl text-ivory-50 tracking-tight uppercase">Custom Credentials & API Tokens</h2>
+            </div>
+            <p class="text-xs text-coolgray-300 mt-1 max-w-2xl leading-relaxed">
+              Configure your permanent Meta Graph API token, Instagram Business Account ID, Webhook security, and dashboard credentials. Tokens are stored locally in SQLite and applied dynamically.
+            </p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button type="button" onclick="testConnection()" id="btnTestConn" class="px-4 py-2.5 rounded-xl bg-charcoal-800 text-coolgray-200 hover:text-ivory-50 hairline-border hover:border-[#8B6CFF] font-mono text-xs flex items-center space-x-2 transition-all cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-[#8B6CFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span id="btnTestConnText">Test Connection</span>
+            </button>
+            <button type="button" onclick="saveSettingsForm()" id="btnSaveSettings" class="px-5 py-2.5 rounded-xl bg-[#8B6CFF] text-[#FAF9F5] font-mono text-xs font-bold hover:bg-[#7854f7] shadow-[0_0_16px_rgba(139,108,255,0.35)] transition-all flex items-center space-x-2 cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              <span id="btnSaveSettingsText">Save Credentials</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Connection Test Diagnostic Box (hidden by default) -->
+        <div id="connDiagnosticBox" class="mt-4 p-4 rounded-xl hairline-border text-xs font-mono hidden"></div>
+      </div>
+
+      <form id="settingsForm" onsubmit="event.preventDefault(); saveSettingsForm();" class="space-y-6">
+        
+        <!-- SECTION 1: META GRAPH API CREDENTIALS -->
+        <div class="poster-card p-6 bg-charcoal-900/80 space-y-5">
+          <div class="flex items-center justify-between border-b hairline-border pb-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-[#8B6CFF] font-mono font-bold text-sm">01</span>
+              <h3 class="font-display font-bold text-sm text-ivory-50 uppercase tracking-wider">Meta Graph API Configuration (v21.0)</h3>
+            </div>
+            <span id="badgeTokenStatus" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-charcoal-800 text-coolgray-400 hairline-border">
+              Checking...
+            </span>
+          </div>
+
+          <div class="space-y-4">
+            <!-- PAGE_ACCESS_TOKEN -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="settingPageAccessToken" class="text-xs font-mono text-coolgray-300 font-medium">
+                  Page Access Token <span class="text-[#8B6CFF]">*</span>
+                </label>
+                <div class="flex items-center space-x-3">
+                  <button type="button" onclick="toggleTokenVisibility('settingPageAccessToken')" class="text-[11px] font-mono text-[#8B6CFF] hover:underline cursor-pointer">
+                    <span id="toggleTextPageAccessToken">Show Token</span>
+                  </button>
+                </div>
+              </div>
+              <div class="relative">
+                <input type="password" id="settingPageAccessToken" placeholder="EAAY... (Paste your permanent Meta access token here)" class="w-full px-4 py-3 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF] pr-20 transition-all">
+                <button type="button" onclick="pasteToken('settingPageAccessToken')" class="absolute right-3 top-2.5 px-2.5 py-1 rounded bg-charcoal-800 text-[10px] font-mono text-coolgray-300 hover:text-ivory-100 hairline-border cursor-pointer">
+                  Paste
+                </button>
+              </div>
+              <p class="text-[11px] text-coolgray-500 mt-1">
+                Permanent System User token from Meta Business Suite with `instagram_basic`, `instagram_manage_comments`, and `instagram_manage_messages`.
+              </p>
+            </div>
+
+            <!-- IG_BUSINESS_ACCOUNT_ID and PAGE_ID Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="settingIgBusinessAccountId" class="block text-xs font-mono text-coolgray-300 font-medium mb-1.5">
+                  Instagram Business Account ID <span class="text-[#8B6CFF]">*</span>
+                </label>
+                <input type="text" id="settingIgBusinessAccountId" placeholder="e.g. 17841415119954802" class="w-full px-4 py-2.5 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF]">
+                <p class="text-[11px] text-coolgray-500 mt-1">Numerical ID of the connected Instagram professional account.</p>
+              </div>
+
+              <div>
+                <label for="settingPageId" class="block text-xs font-mono text-coolgray-300 font-medium mb-1.5">
+                  Facebook Page ID <span class="text-[#8B6CFF]">*</span>
+                </label>
+                <input type="text" id="settingPageId" placeholder="e.g. 1306178772583899" class="w-full px-4 py-2.5 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF]">
+                <p class="text-[11px] text-coolgray-500 mt-1">Numerical ID of the linked Facebook Page required for Private Replies.</p>
+              </div>
+            </div>
+
+            <!-- APP_ID and WEBHOOK_VERIFY_TOKEN Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="settingAppId" class="block text-xs font-mono text-coolgray-300 font-medium mb-1.5">
+                  Meta App ID (Optional)
+                </label>
+                <input type="text" id="settingAppId" placeholder="e.g. 1746074716477366" class="w-full px-4 py-2.5 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF]">
+              </div>
+
+              <div>
+                <label for="settingWebhookVerifyToken" class="block text-xs font-mono text-coolgray-300 font-medium mb-1.5">
+                  Webhook Verify Token
+                </label>
+                <input type="text" id="settingWebhookVerifyToken" placeholder="Mercury_Secret_Verify_Token_2026" class="w-full px-4 py-2.5 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF]">
+                <p class="text-[11px] text-coolgray-500 mt-1">Secret string entered in Meta Webhooks Dashboard for handshake verification.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: INSTAGRAM PROFILE & COMMUNITY CUSTOMIZATION -->
+        <div class="poster-card p-6 bg-charcoal-900/80 space-y-5">
+          <div class="flex items-center justify-between border-b hairline-border pb-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-[#8B6CFF] font-mono font-bold text-sm">02</span>
+              <h3 class="font-display font-bold text-sm text-ivory-50 uppercase tracking-wider">Profile & Community Links</h3>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="settingIgUsername" class="block text-xs font-mono text-coolgray-300 font-medium mb-1.5">
+                Your Instagram Username (@handle)
+              </label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-2.5 text-[#8B6CFF] font-mono text-xs">@</span>
+                <input type="text" id="settingIgUsername" placeholder="your_handle" class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF]">
+              </div>
+              <p class="text-[11px] text-coolgray-500 mt-1">Used in Follow-Gate verification links and dashboard status badges.</p>
+            </div>
+
+            <div>
+              <label for="settingDiscordInviteUrl" class="block text-xs font-mono text-coolgray-300 font-medium mb-1.5">
+                Discord Community Link
+              </label>
+              <input type="text" id="settingDiscordInviteUrl" placeholder="https://discord.gg/your-community" class="w-full px-4 py-2.5 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF]">
+              <p class="text-[11px] text-coolgray-500 mt-1">Your community invite link inserted into welcome DMs and trigger rules.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: OPERATOR AUTHENTICATION -->
+        <div class="poster-card p-6 bg-charcoal-900/80 space-y-5">
+          <div class="flex items-center justify-between border-b hairline-border pb-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-[#8B6CFF] font-mono font-bold text-sm">03</span>
+              <h3 class="font-display font-bold text-sm text-ivory-50 uppercase tracking-wider">Dashboard Operator Login</h3>
+            </div>
+            <span class="text-[10px] font-mono text-coolgray-400">Protected Route Authentication</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="settingDashboardUsername" class="block text-xs font-mono text-coolgray-300 font-medium mb-1.5">
+                Operator Username
+              </label>
+              <input type="text" id="settingDashboardUsername" placeholder="admin" class="w-full px-4 py-2.5 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF]">
+            </div>
+
+            <div>
+              <label for="settingDashboardPassword" class="block text-xs font-mono text-coolgray-300 font-medium mb-1.5">
+                New Operator Password
+              </label>
+              <input type="password" id="settingDashboardPassword" placeholder="(Leave blank to keep existing password)" class="w-full px-4 py-2.5 rounded-xl bg-charcoal-950 hairline-border text-xs text-ivory-100 placeholder-coolgray-600 font-mono focus:outline-none focus:border-[#8B6CFF]">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: STEP-BY-STEP SETUP GUIDE -->
+        <div class="poster-card p-6 bg-charcoal-900/80 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="text-[#C6FF3D] font-mono font-bold text-sm">04</span>
+              <h3 class="font-display font-bold text-sm text-ivory-50 uppercase tracking-wider">Quick Setup Guide: Getting Meta Credentials</h3>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono text-coolgray-300">
+            <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-1.5">
+              <div class="text-[#8B6CFF] font-bold">Step 1: Meta App</div>
+              <p class="text-coolgray-400 text-[11px] leading-relaxed">
+                Go to <span class="text-ivory-200">developers.facebook.com</span>, create an App of type <b>Business</b>. Add the <b>Instagram Graph API</b> product.
+              </p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-1.5">
+              <div class="text-[#8B6CFF] font-bold">Step 2: Permanent Token</div>
+              <p class="text-coolgray-400 text-[11px] leading-relaxed">
+                In Meta Business Suite > Business Settings > <b>System Users</b>, generate a token with `instagram_manage_comments` & `instagram_manage_messages`.
+              </p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-1.5">
+              <div class="text-[#8B6CFF] font-bold">Step 3: Webhook Handshake</div>
+              <p class="text-coolgray-400 text-[11px] leading-relaxed">
+                Set Callback URL to <span class="text-ivory-200">https://your-domain/webhook</span>, enter your Verify Token, and subscribe to <b>comments</b> and <b>messages</b>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </section>
+
   </main>
 
   <!-- ============================================================ -->
@@ -843,6 +1061,8 @@
       loadTriggers();
       loadLogs();
       fetchReplierStatus();
+      loadSystemStatus();
+      loadSettings();
       setInterval(loadStats, 20000);
       setInterval(fetchReplierStatus, 15000);
     });
@@ -961,7 +1181,7 @@
       if (activePane) activePane.classList.remove('hidden');
 
       // Update sidebar nav active states
-      const navIds = ['videos', 'tracker', 'sandbox', 'triggers', 'logs'];
+      const navIds = ['videos', 'tracker', 'sandbox', 'triggers', 'logs', 'settings'];
       navIds.forEach(id => {
         const btn = document.getElementById(`sideNav-${id}`);
         if (!btn) return;
@@ -971,6 +1191,10 @@
           btn.className = "w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all text-coolgray-400 hover:text-ivory-100 hover:bg-charcoal-900 hairline-border hover:border-coolgray-700";
         }
       });
+
+      if (tabId === 'settings') {
+        loadSettings();
+      }
 
       // Scroll to top of view
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1678,6 +1902,209 @@
       } finally {
         btnText.textContent = 'Run Scan';
         btn.disabled = false;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // SYSTEM STATUS & DYNAMIC ACCOUNT INFO
+    // -------------------------------------------------------------
+    async function loadSystemStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/api/status`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const sideAcct = document.getElementById('sideFooterAccount');
+        if (sideAcct && data.instagram_account) {
+          sideAcct.textContent = `@${data.instagram_account}`;
+        }
+      } catch (e) {
+        console.error('Status load error', e);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // CREDENTIALS & SETTINGS MANAGEMENT
+    // -------------------------------------------------------------
+    async function loadSettings() {
+      try {
+        const res = await fetch(`${API_BASE}/api/settings`);
+        if (res.status === 401) { window.location.href = '/'; return; }
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Populate fields
+        const tokenInput = document.getElementById('settingPageAccessToken');
+        if (tokenInput && data.page_access_token_masked) {
+          tokenInput.value = data.page_access_token_masked;
+        }
+
+        const badge = document.getElementById('badgeTokenStatus');
+        if (badge) {
+          if (data.page_access_token_set) {
+            badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#C6FF3D]/15 text-[#C6FF3D] border border-[#C6FF3D]/30 flex items-center space-x-1";
+            badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-[#C6FF3D] inline-block"></span><span>TOKEN CONFIGURED</span>';
+          } else {
+            badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#FF4D6D]/15 text-[#FF4D6D] border border-[#FF4D6D]/30 flex items-center space-x-1";
+            badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-[#FF4D6D] inline-block"></span><span>NOT SET</span>';
+          }
+        }
+
+        const elIgId = document.getElementById('settingIgBusinessAccountId');
+        if (elIgId) elIgId.value = data.ig_business_account_id || '';
+
+        const elPageId = document.getElementById('settingPageId');
+        if (elPageId) elPageId.value = data.page_id || '';
+
+        const elAppId = document.getElementById('settingAppId');
+        if (elAppId) elAppId.value = data.app_id || '';
+
+        const elVerify = document.getElementById('settingWebhookVerifyToken');
+        if (elVerify) elVerify.value = data.webhook_verify_token || '';
+
+        const elIgUser = document.getElementById('settingIgUsername');
+        if (elIgUser) elIgUser.value = data.ig_username || '';
+
+        const elDiscord = document.getElementById('settingDiscordInviteUrl');
+        if (elDiscord) elDiscord.value = data.discord_invite_url || '';
+
+        const elDashUser = document.getElementById('settingDashboardUsername');
+        if (elDashUser) elDashUser.value = data.dashboard_username || '';
+
+        const elDashPass = document.getElementById('settingDashboardPassword');
+        if (elDashPass) elDashPass.value = '';
+
+      } catch (err) {
+        console.error('Settings load error', err);
+      }
+    }
+
+    async function saveSettingsForm() {
+      const btn = document.getElementById('btnSaveSettings');
+      const btnText = document.getElementById('btnSaveSettingsText');
+      if (btnText) btnText.textContent = 'Saving...';
+      if (btn) btn.disabled = true;
+
+      const payload = {
+        PAGE_ACCESS_TOKEN: document.getElementById('settingPageAccessToken').value.trim(),
+        IG_BUSINESS_ACCOUNT_ID: document.getElementById('settingIgBusinessAccountId').value.trim(),
+        PAGE_ID: document.getElementById('settingPageId').value.trim(),
+        APP_ID: document.getElementById('settingAppId').value.trim(),
+        WEBHOOK_VERIFY_TOKEN: document.getElementById('settingWebhookVerifyToken').value.trim(),
+        IG_USERNAME: document.getElementById('settingIgUsername').value.trim().replace(/^@/, ''),
+        DISCORD_INVITE_URL: document.getElementById('settingDiscordInviteUrl').value.trim(),
+        DASHBOARD_USERNAME: document.getElementById('settingDashboardUsername').value.trim(),
+      };
+
+      const newPass = document.getElementById('settingDashboardPassword').value.trim();
+      if (newPass) {
+        payload.DASHBOARD_PASSWORD = newPass;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/settings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          showToast(`Save error: ${err.detail || 'Could not save settings'}`);
+          return;
+        }
+
+        showToast('Credentials updated & saved to SQLite database!');
+        loadSettings();
+        loadSystemStatus();
+      } catch (err) {
+        showToast('Network error while saving settings.');
+      } finally {
+        if (btnText) btnText.textContent = 'Save Credentials';
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function testConnection() {
+      const btn = document.getElementById('btnTestConn');
+      const btnText = document.getElementById('btnTestConnText');
+      const box = document.getElementById('connDiagnosticBox');
+      
+      if (btnText) btnText.textContent = 'Testing...';
+      if (btn) btn.disabled = true;
+
+      box.classList.remove('hidden');
+      box.className = "mt-4 p-4 rounded-xl hairline-border text-xs font-mono bg-charcoal-950 text-coolgray-300";
+      box.innerHTML = 'Connecting to Meta Graph API v21.0...';
+
+      const payload = {
+        page_access_token: document.getElementById('settingPageAccessToken').value.trim(),
+        ig_business_account_id: document.getElementById('settingIgBusinessAccountId').value.trim(),
+        page_id: document.getElementById('settingPageId').value.trim()
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/settings/test-connection`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          box.className = "mt-4 p-4 rounded-xl border border-[#C6FF3D]/40 bg-[#C6FF3D]/10 text-xs font-mono text-ivory-50 space-y-2";
+          let html = `<div class="font-bold text-[#C6FF3D] flex items-center space-x-1.5">
+            <span>&#10003;</span>
+            <span>${data.message}</span>
+          </div>`;
+          if (data.page && data.page.name) {
+            html += `<div class="text-coolgray-300">Facebook Page: <b class="text-ivory-100">${escapeHtml(data.page.name)}</b> (ID: ${data.page.id})</div>`;
+          }
+          if (data.instagram && data.instagram.username) {
+            html += `<div class="text-coolgray-300">Instagram Account: <b class="text-[#8B6CFF]">@${escapeHtml(data.instagram.username)}</b> (ID: ${data.instagram.id})</div>`;
+          } else if (data.instagram && data.instagram.warning) {
+            html += `<div class="text-amber-400 text-[11px]">${escapeHtml(data.instagram.warning)}</div>`;
+          }
+          box.innerHTML = html;
+          showToast('Connection test passed!');
+        } else {
+          box.className = "mt-4 p-4 rounded-xl border border-[#FF4D6D]/40 bg-[#FF4D6D]/10 text-xs font-mono text-[#FF4D6D] space-y-1";
+          box.innerHTML = `<div class="font-bold">&#10007; Connection Failed</div><div>${escapeHtml(data.message)}</div>`;
+          showToast('Connection failed. Check credentials.');
+        }
+      } catch (err) {
+        box.className = "mt-4 p-4 rounded-xl border border-[#FF4D6D]/40 bg-[#FF4D6D]/10 text-xs font-mono text-[#FF4D6D]";
+        box.innerHTML = `<div>Network error: ${escapeHtml(err.message)}</div>`;
+      } finally {
+        if (btnText) btnText.textContent = 'Test Connection';
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function toggleTokenVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      const toggleText = document.getElementById('toggleTextPageAccessToken');
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (toggleText) toggleText.textContent = 'Hide Token';
+      } else {
+        input.type = 'password';
+        if (toggleText) toggleText.textContent = 'Show Token';
+      }
+    }
+
+    async function pasteToken(inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          input.value = text.trim();
+          showToast('Token pasted from clipboard.');
+        }
+      } catch (err) {
+        input.focus();
+        showToast('Use Ctrl+V to paste token.');
       }
     }
   </script>

@@ -137,7 +137,8 @@ def process_incoming_comment(
         pending = database.get_pending_follow_gate(username)
         if pending and pending.get("status") == "pending":
             database.unlock_follow_gate(username)
-            unlocked_template = pending.get("unlocked_dm") or "Awesome! Thanks for following @theabeerkumar. Here is your link:\nhttps://github.com/theabeerkumar"
+            ig_handle = meta_api.get_ig_username()
+            unlocked_template = pending.get("unlocked_dm") or f"Awesome! Thanks for following @{ig_handle}. Here is your unlocked link:\nhttps://www.instagram.com/{ig_handle}/"
             unlocked_text = safe_format(unlocked_template, username)
             
             print(f"\n[FOLLOW-GATE UNLOCKED] User: @{username} confirmed follow!")
@@ -177,7 +178,8 @@ def process_incoming_comment(
 
         if not user_already_unlocked and api_follows is not True:
             # User must follow first!
-            unlocked_content = rule.get("unlocked_dm") or rule.get("reply_dm") or "Here is your link: https://github.com/theabeerkumar"
+            ig_handle = meta_api.get_ig_username()
+            unlocked_content = rule.get("unlocked_dm") or rule.get("reply_dm") or f"Here is your link: https://www.instagram.com/{ig_handle}/"
             database.set_pending_follow_gate(
                 username=username,
                 media_id=media_id,
@@ -187,18 +189,18 @@ def process_incoming_comment(
             )
 
             gate_prompt = rule.get("follow_gate_message") or (
-                "Hey {username}! To unlock this link/guide, please follow @theabeerkumar first:\n\n"
-                "1. Follow: https://www.instagram.com/theabeerkumar/\n"
+                f"Hey {{username}}! To unlock this link/guide, please follow @{ig_handle} first:\n\n"
+                f"1. Follow: https://www.instagram.com/{ig_handle}/\n"
                 "2. Once followed, reply 'FOLLOWED' to this DM to instantly get your link!"
             )
             reply_dm = safe_format(gate_prompt, username)
             public_reply = "Check your DMs to unlock the link!"
 
-            print(f"\n[FOLLOW-GATE SENT] User: @{username} | Asking to follow @theabeerkumar")
+            print(f"\n[FOLLOW-GATE SENT] User: @{username} | Asking to follow @{ig_handle}")
             dm_res = meta_api.send_follow_gate_message(
                 comment_id=comment_id,
                 text=reply_dm,
-                account_username="theabeerkumar",
+                account_username=ig_handle,
                 user_id=user_id
             )
             

@@ -96,6 +96,13 @@ def init_db():
                 unlocked_at TIMESTAMP
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
         
         # Safe migrations for existing databases
         columns = [c[1] for c in conn.execute("PRAGMA table_info(video_automations)").fetchall()]
@@ -162,59 +169,27 @@ def init_db():
             except Exception as e:
                 print(f"[DB SEED ERROR] {e}")
 
-        # 2. Hardcoded fallback for default XenClips automations
+        # 2. Clean fallback for default sample preset automations
         if not loaded_seed:
-            xenclips_defaults = [
+            sample_defaults = [
                 (
-                    "18159554401483315",
-                    "https://www.instagram.com/reel/DbsJifchlUi/",
-                    "Stop scrolling. Start creating. Every minute you spend consuming content grows at someone else's audience. Every clip you publish grows yours. Meet XenClips — a 100% local AI clipping software that's free, private, and lightning fast. No cloud. No subscriptions. Just AI-powered clipping on your own PC. Comment 'XENCLIPS' if you want early access.",
+                    "sample_upcoming_reel_001",
+                    "https://www.instagram.com/reel/sample_upcoming_reel/",
+                    "🚀 Upcoming Project Launch Reel: Automate Instagram Comments & DMs with Mercury! Drop 'DEMO' in the comments to receive early access.",
                     "",
-                    json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "ACCESS", "LINK", "EARLY", "SEND", "*"]),
+                    json.dumps(["DEMO", "ACCESS", "LINK", "START", "*"]),
                     "contains",
-                    "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
-                    "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
-                    "Check your DMs! Just sent you the XenClips details.",
+                    "Hey {username}! Thanks for showing interest in Mercury Automation!\n\nHere is your early access link:\nhttps://github.com/your-repo/demo\n\nLet us know what you think!",
+                    "Also make sure to join our builder community on Discord to exchange tips and growth strategies:\nhttps://discord.gg/your-community",
+                    "Check your DMs! Just sent you the early access link.",
                     0,
                     "",
                     "",
                     1,
-                    0
-                ),
-                (
-                    "17907781038461021",
-                    "https://www.instagram.com/reel/Dbp5cpJhE08/",
-                    "🚀 Built this to solve my own problem. Most creators spend hours editing, trimming, and adding captions manually. I wanted a faster workflow—so I built my own AI clipping software. This is just the beginning. More features coming soon. 👀",
-                    "",
-                    json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "SOFTWARE", "AI", "TOOL", "LINK", "ACCESS", "*"]),
-                    "contains",
-                    "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
-                    "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
-                    "Check your DMs! Just sent you the XenClips details.",
-                    0,
-                    "",
-                    "",
-                    1,
-                    0
-                ),
-                (
-                    "17927928345391328",
-                    "https://www.instagram.com/reel/Db2mJTdh7uY/",
-                    "Stop scrolling. Start creating. Every minute you spend consuming content grows at someone else's audience. Every clip you publish grows yours. Meet XenClips — a 100% local AI clipping software that's free, private, and lightning fast. No cloud. No subscriptions. Just AI-powered clipping on your own PC. Comment 'XENCLIPS' if you want early access.",
-                    "",
-                    json.dumps(["XENCLIPS", "XEN", "CLIPS", "CLIP", "ACCESS", "LINK", "EARLY", "SEND", "*"]),
-                    "contains",
-                    "Hey {username}! Thanks for showing interest in XenClips!\n\nHere is the video where I explain everything about it:\nhttps://youtu.be/JFh1Onb6OmM\n\nAlso, I would really appreciate it if you could subscribe to my YouTube channel and follow along for more projects, experiments and things I am building.",
-                    "Also, I have started a community for like-minded creators, builders and people who love experimenting with technology and creating things.\n\nThe idea is to connect, share projects, exchange ideas and grow together. Would love to have you join us!\n\nJoin our broadcast channel here:\nhttps://www.instagram.com/channel/butuNaXRRCP7Y0SB/",
-                    "Check your DMs! Just sent you the XenClips details.",
-                    0,
-                    "",
-                    "",
-                    1,
-                    0
+                    1
                 )
             ]
-            for v in xenclips_defaults:
+            for v in sample_defaults:
                 conn.execute("""
                     INSERT OR IGNORE INTO video_automations 
                     (media_id, permalink, caption, thumbnail_url, keywords, match_type, reply_dm, reply_dm_2, public_reply, enable_follow_gate, follow_gate_message, unlocked_dm, is_active, is_upcoming)
@@ -488,6 +463,61 @@ def is_user_unlocked(username: str, media_id: str = None) -> bool:
                 WHERE LOWER(username) = LOWER(?) AND status = 'unlocked'
             """, (username.strip(),)).fetchone()
         return row is not None
+
+
+# -------------------------------------------------------------
+# DYNAMIC CREDENTIALS & SETTINGS STORAGE
+# -------------------------------------------------------------
+
+def get_setting(key: str, default: str = None) -> str:
+    """Retrieve a configuration setting from the database, fallback to default."""
+    if not key:
+        return default
+    with get_db() as conn:
+        cur = conn.execute("SELECT value FROM settings WHERE key = ?", (key.strip().upper(),))
+        row = cur.fetchone()
+        if row and row["value"] is not None and str(row["value"]).strip() != "":
+            return str(row["value"]).strip()
+        return default
+
+
+def get_all_settings() -> dict:
+    """Retrieve all configuration settings stored in the database."""
+    with get_db() as conn:
+        cur = conn.execute("SELECT key, value FROM settings")
+        return {row["key"]: row["value"] for row in cur.fetchall()}
+
+
+def save_setting(key: str, value: str):
+    """Save or update a single configuration setting."""
+    if not key:
+        return
+    clean_key = key.strip().upper()
+    clean_val = str(value).strip() if value is not None else ""
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO settings (key, value, updated_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+        """, (clean_key, clean_val))
+        conn.commit()
+
+
+def save_settings(settings_dict: dict):
+    """Save or update multiple configuration settings in one transaction."""
+    if not settings_dict:
+        return
+    with get_db() as conn:
+        for k, v in settings_dict.items():
+            if k and v is not None:
+                clean_key = str(k).strip().upper()
+                clean_val = str(v).strip()
+                conn.execute("""
+                    INSERT INTO settings (key, value, updated_at)
+                    VALUES (?, ?, CURRENT_TIMESTAMP)
+                    ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+                """, (clean_key, clean_val))
+        conn.commit()
 
 
 init_db()

@@ -37,12 +37,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-VERIFY_TOKENS = {
-    os.getenv("WEBHOOK_VERIFY_TOKEN", "").strip(),
-    "Mercury_Secret_Verify_Token_2026",
-    "ForgeBot_Secret_Verify_Token_2026"
-}
-VERIFY_TOKENS.discard("")
+def get_valid_verify_tokens() -> set:
+    """Returns set of all authorized webhook verify tokens dynamically."""
+    tokens = {
+        "Mercury_Secret_Verify_Token_2026",
+        "ForgeBot_Secret_Verify_Token_2026",
+        os.getenv("WEBHOOK_VERIFY_TOKEN", "").strip(),
+        database.get_setting("WEBHOOK_VERIFY_TOKEN", "").strip()
+    }
+    tokens.discard("")
+    return tokens
 
 DASHBOARD_FILE = BASE_DIR / "static" / "dashboard.html"
 
@@ -154,15 +158,16 @@ async def serve_dashboard(request: Request):
 @app.get("/privacy", response_class=HTMLResponse)
 @app.get("/terms", response_class=HTMLResponse)
 def serve_privacy_policy():
-    return HTMLResponse(content="""<!DOCTYPE html>
+    contact_email = os.getenv("CONTACT_EMAIL", "support@mercury.local")
+    return HTMLResponse(content=f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Mercury Automation - Privacy Policy & Data Deletion</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #222; }
-    h1, h2 { color: #111; }
-    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #222; }}
+    h1, h2 {{ color: #111; }}
+    code {{ background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }}
   </style>
 </head>
 <body>
@@ -177,10 +182,10 @@ def serve_privacy_policy():
   <p>We do not sell, rent, or distribute personal data to third parties. Data is processed solely for conversational automation and analytics.</p>
   
   <h2>User Data Deletion Instructions</h2>
-  <p>Users have the right to request deletion of their data at any time. To request deletion of your interaction history, please email <code>kumarabeer007@gmail.com</code> with your Instagram username, or send a direct message with the keyword <code>DELETE DATA</code>. Your data will be permanently purged within 48 hours.</p>
+  <p>Users have the right to request deletion of their data at any time. To request deletion of your interaction history, please email <code>{contact_email}</code> with your Instagram username, or send a direct message with the keyword <code>DELETE DATA</code>. Your data will be permanently purged within 48 hours.</p>
 
   <h2>Contact</h2>
-  <p>If you have any questions regarding privacy or data handling, contact: <code>kumarabeer007@gmail.com</code>.</p>
+  <p>If you have any questions regarding privacy or data handling, contact: <code>{contact_email}</code>.</p>
 </body>
 </html>""", status_code=200)
 
@@ -191,17 +196,23 @@ def serve_privacy_policy():
 
 @app.get("/api/status")
 def get_system_status():
+    page_id = meta_api.get_page_id()
+    ig_id = meta_api.get_ig_account_id()
+    token = meta_api.get_page_access_token()
+    ig_user = meta_api.get_ig_username()
+    discord_url = database.get_setting("DISCORD_INVITE_URL") or os.getenv("DISCORD_INVITE_URL", "https://discord.gg/your-community")
     return {
         "status": "online",
         "brand": "Mercury",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "service": "Mercury Instagram & Meta Growth Automation Engine",
-        "instagram_account": "theabeerkumar",
-        "page_id": meta_api.PAGE_ID,
-        "ig_business_id": meta_api.IG_BUSINESS_ACCOUNT_ID,
+        "instagram_account": ig_user,
+        "page_id": page_id,
+        "ig_business_id": ig_id,
+        "has_access_token": bool(token),
         "graph_api_version": meta_api.GRAPH_API_VERSION,
         "processed_comments_total": database.get_all_processed_count(),
-        "discord_community": os.getenv("DISCORD_INVITE_URL", "https://discord.gg/ARxXmTmAV2"),
+        "discord_community": discord_url,
         "webhook_url": "/webhook"
     }
 
@@ -426,6 +437,183 @@ async def save_triggers(request: Request, payload: dict = Body(...)):
     return {"status": "saved", "triggers": payload}
 
 
+# -------------------------------------------------------------
+# REST API: CREDENTIALS & CUSTOM SETTINGS
+# -------------------------------------------------------------
+
+def mask_token(val: str, prefix_len: int = 4, suffix_len: int = 4) -> str:
+    """Masks secret tokens so real tokens are never exposed in browser HTML/DevTools."""
+    if not val:
+        return ""
+    val_str = str(val).strip()
+    if len(val_str) <= (prefix_len + suffix_len):
+        return "••••••••"
+    return f"{val_str[:prefix_len]}{'•' * 18}{val_str[-suffix_len:]}"
+
+
+def _sync_settings_to_env(new_settings: dict):
+    """Synchronizes updated settings into local .env if present."""
+    env_file = BASE_DIR / ".env"
+    if not env_file.exists():
+        return
+    try:
+        with open(env_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        
+        updated_lines = []
+        found_keys = set()
+        for line in lines:
+            stripped = line.strip()
+            if stripped and not stripped.startswith("#") and "=" in line:
+                k, _ = line.split("=", 1)
+                k_clean = k.strip()
+                if k_clean in new_settings:
+                    updated_lines.append(f"{k_clean}={new_settings[k_clean]}\n")
+                    found_keys.add(k_clean)
+                    continue
+            updated_lines.append(line)
+        
+        for k, v in new_settings.items():
+            if k not in found_keys:
+                updated_lines.append(f"{k}={v}\n")
+                
+        with open(env_file, "w", encoding="utf-8") as f:
+            f.writelines(updated_lines)
+    except Exception as e:
+        print(f"[ENV SYNC NOTICE] Could not sync settings to .env: {e}")
+
+
+@app.get("/api/settings")
+def get_settings(request: Request):
+    """Returns configured credentials and settings with sensitive tokens securely masked."""
+    auth.require_auth(request)
+    raw_token = meta_api.get_page_access_token()
+    raw_page_id = meta_api.get_page_id()
+    raw_ig_id = meta_api.get_ig_account_id()
+    raw_app_id = database.get_setting("APP_ID") or os.getenv("APP_ID", "")
+    raw_webhook_token = database.get_setting("WEBHOOK_VERIFY_TOKEN") or os.getenv("WEBHOOK_VERIFY_TOKEN", "Mercury_Secret_Verify_Token_2026")
+    raw_ig_username = meta_api.get_ig_username()
+    raw_discord = database.get_setting("DISCORD_INVITE_URL") or os.getenv("DISCORD_INVITE_URL", "")
+    raw_dash_user = database.get_setting("DASHBOARD_USERNAME") or os.getenv("DASHBOARD_USERNAME", "admin")
+    has_dash_pass = bool(database.get_setting("DASHBOARD_PASSWORD") or os.getenv("DASHBOARD_PASSWORD"))
+
+    return {
+        "page_access_token_masked": mask_token(raw_token, 4, 4),
+        "page_access_token_set": bool(raw_token),
+        "page_id": raw_page_id,
+        "ig_business_account_id": raw_ig_id,
+        "app_id": raw_app_id,
+        "webhook_verify_token": raw_webhook_token,
+        "ig_username": raw_ig_username,
+        "discord_invite_url": raw_discord,
+        "dashboard_username": raw_dash_user,
+        "dashboard_password_set": has_dash_pass
+    }
+
+
+@app.post("/api/settings")
+async def update_settings(request: Request, payload: dict = Body(...)):
+    """Saves custom tokens and credentials into SQLite database and syncs to .env."""
+    auth.require_auth(request)
+    allowed_keys = {
+        "PAGE_ACCESS_TOKEN", "PAGE_ID", "IG_BUSINESS_ACCOUNT_ID",
+        "APP_ID", "WEBHOOK_VERIFY_TOKEN", "IG_USERNAME",
+        "DISCORD_INVITE_URL", "DASHBOARD_USERNAME", "DASHBOARD_PASSWORD"
+    }
+    to_save = {}
+    for k, v in payload.items():
+        k_upper = k.upper().strip()
+        if k_upper in allowed_keys and v is not None:
+            v_str = str(v).strip()
+            # If user kept the masked placeholder string (e.g. contains '••••'), do not overwrite
+            if "•" in v_str:
+                continue
+            to_save[k_upper] = v_str
+
+    if to_save:
+        database.save_settings(to_save)
+        _sync_settings_to_env(to_save)
+
+    return {
+        "status": "success",
+        "message": "Custom credentials updated successfully",
+        "updated_keys": list(to_save.keys())
+    }
+
+
+@app.post("/api/settings/test-connection")
+async def test_meta_connection(request: Request, payload: dict = Body(None)):
+    """Tests the configured or provided Meta credentials against the official Graph API."""
+    auth.require_auth(request)
+    token = (payload or {}).get("page_access_token") if payload else None
+    if not token or "•" in token:
+        token = meta_api.get_page_access_token()
+
+    ig_id = (payload or {}).get("ig_business_account_id") if payload else None
+    if not ig_id:
+        ig_id = meta_api.get_ig_account_id()
+
+    page_id = (payload or {}).get("page_id") if payload else None
+    if not page_id:
+        page_id = meta_api.get_page_id()
+
+    if not token:
+        return {
+            "success": False,
+            "stage": "token_check",
+            "message": "No Page Access Token provided or configured. Please enter your Meta token."
+        }
+
+    import ssl
+    import urllib.request
+    import urllib.error
+    headers = {"User-Agent": "Mercury/1.0"}
+    ctx = ssl.create_default_context()
+
+    # 1. Test token validity via /me
+    target_endpoint = f"{meta_api.BASE_URL}/me?fields=id,name&access_token={token}"
+    try:
+        req = urllib.request.Request(target_endpoint, headers=headers)
+        with urllib.request.urlopen(req, timeout=8, context=ctx) as resp:
+            page_data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        err_msg = str(e)
+        try:
+            err_body = json.loads(e.read().decode("utf-8"))
+            err_msg = err_body.get("error", {}).get("message", err_msg)
+        except Exception:
+            pass
+        return {
+            "success": False,
+            "stage": "page_verification",
+            "message": f"Token verification failed: {err_msg}"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "stage": "network",
+            "message": f"Connection error: {str(e)}"
+        }
+
+    # 2. Test Instagram Business Account if ID provided
+    ig_data = None
+    if ig_id:
+        try:
+            ig_endpoint = f"{meta_api.BASE_URL}/{ig_id}?fields=id,username,name&access_token={token}"
+            req_ig = urllib.request.Request(ig_endpoint, headers=headers)
+            with urllib.request.urlopen(req_ig, timeout=8, context=ctx) as resp_ig:
+                ig_data = json.loads(resp_ig.read().decode("utf-8"))
+        except Exception as e:
+            ig_data = {"warning": f"Could not verify IG account: {str(e)}"}
+
+    return {
+        "success": True,
+        "message": "Meta Graph API credentials verified successfully!",
+        "page": page_data,
+        "instagram": ig_data
+    }
+
+
 @app.get("/api/cron/poll")
 def cron_poll(request: Request, limit: int = 2):
     """
@@ -571,7 +759,7 @@ async def verify_webhook(
 ):
     print(f"[MERCURY WEBHOOK VERIFY] mode={hub_mode}, token={hub_verify_token}, challenge={hub_challenge}")
 
-    if hub_mode == "subscribe" and (hub_verify_token in VERIFY_TOKENS):
+    if hub_mode == "subscribe" and (hub_verify_token in get_valid_verify_tokens()):
         print("✅ Mercury Webhook verified successfully!")
         return PlainTextResponse(content=hub_challenge)
     
@@ -631,7 +819,8 @@ async def handle_webhook(request: Request):
                 if words.intersection({"FOLLOWED", "FOLLOW", "DONE", "UNLOCKED"}) or "FOLLOWED" in clean_msg:
                     unlocked_gate = database.unlock_follow_gate(user_id=sender_id)
                     if unlocked_gate:
-                        unlocked_text = unlocked_gate.get("unlocked_dm") or "Awesome! Thanks for following @theabeerkumar. Here is your unlocked link:\nhttps://github.com/theabeerkumar"
+                        ig_handle = meta_api.get_ig_username()
+                        unlocked_text = unlocked_gate.get("unlocked_dm") or f"Awesome! Thanks for following @{ig_handle}. Here is your unlocked link:\nhttps://www.instagram.com/{ig_handle}/"
                         print(f"🔓 Follow-Gate unlocked via DM for user {sender_id}! Sending unlocked link...")
                         meta_api.send_direct_message(recipient_id=sender_id, message_text=unlocked_text)
                         results.append({"status": "follow_gate_unlocked_via_dm", "user_id": sender_id})

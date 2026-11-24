@@ -16,7 +16,7 @@ from bot_engine import process_incoming_comment
 from database import is_comment_processed, get_all_processed_count
 
 
-ALWAYS_TARGET_REELS = ["18159554401483315", "17907781038461021", "17927928345391328"]
+ALWAYS_TARGET_REELS = []
 
 
 def scan_recent_comments(limit_media: int = 3, dry_run: bool = False, max_batch: int = 4):
@@ -28,7 +28,7 @@ def scan_recent_comments(limit_media: int = 3, dry_run: bool = False, max_batch:
     from database import get_video_automations
     print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Scanning media for incoming comments...")
     
-    # 1. ALWAYS include all active configured reels and permanent XenClips reels
+    # 1. ALWAYS include all active configured reels from SQLite
     target_media_ids = set(ALWAYS_TARGET_REELS)
     try:
         automations = get_video_automations()
