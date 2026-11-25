@@ -885,6 +885,51 @@
           </div>
         </div>
 
+        <!-- SECTION 5: TOP PITFALLS & COMMON MISTAKES -->
+        <div class="poster-card p-6 bg-charcoal-900/80 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="text-[#FF4D6D] font-mono font-bold text-sm">05</span>
+              <h3 class="font-display font-bold text-sm text-ivory-50 uppercase tracking-wider">Top Common Mistakes to Avoid</h3>
+            </div>
+            <span class="text-[10px] font-mono text-coolgray-400">Avoid silent API failures</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs font-mono">
+            <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-1">
+              <div class="text-[#FF4D6D] font-bold text-[11px] flex items-center space-x-1.5">
+                <span>⚠️</span><span>Disabled Messages in Facebook Page</span>
+              </div>
+              <p class="text-coolgray-400 text-[11px] leading-relaxed">
+                In FB Page > Linked Accounts > Instagram, ensure <b>"Allow access to Instagram messages in Inbox"</b> is turned <b>ON</b>.
+              </p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-1">
+              <div class="text-[#FF4D6D] font-bold text-[11px] flex items-center space-x-1.5">
+                <span>⚠️</span><span>Using Expiring User Tokens</span>
+              </div>
+              <p class="text-coolgray-400 text-[11px] leading-relaxed">
+                Graph Explorer tokens expire in 1-60 days. Always create a <b>System User</b> in Meta Business Suite set to <b>Never Expire</b>.
+              </p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-1">
+              <div class="text-[#FF4D6D] font-bold text-[11px] flex items-center space-x-1.5">
+                <span>⚠️</span><span>Testing in Development Mode</span>
+              </div>
+              <p class="text-coolgray-400 text-[11px] leading-relaxed">
+                In Dev mode, DMs only work for registered <b>App Testers</b>. Switch your Meta App to <b>Live Mode</b> for public accounts.
+              </p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-charcoal-950 hairline-border space-y-1">
+              <div class="text-[#FF4D6D] font-bold text-[11px] flex items-center space-x-1.5">
+                <span>⚠️</span><span>Swapping Page ID & Instagram ID</span>
+              </div>
+              <p class="text-coolgray-400 text-[11px] leading-relaxed">
+                `PAGE_ID` is strictly for your Facebook Page; `IG_BUSINESS_ACCOUNT_ID` is for Instagram. Use <b>Test Connection</b> to check.
+              </p>
+            </div>
+          </div>
+        </div>
+
       </form>
     </section>
 

@@ -19,7 +19,8 @@
 11. [Phase 9: Creating Video Automations & Follow-Gates](#phase-9-creating-video-automations--follow-gates)
 12. [Phase 10: Serverless Cloud Deployment (Vercel)](#phase-10-serverless-cloud-deployment-vercel)
 13. [Security, Privacy & Data Compliance](#security-privacy--data-compliance)
-14. [Troubleshooting & Frequently Asked Questions](#troubleshooting--frequently-asked-questions)
+14. [Top 10 Common Mistakes & Pitfalls to Avoid](#14-top-10-common-mistakes--pitfalls-to-avoid)
+15. [Troubleshooting & Frequently Asked Questions](#troubleshooting--frequently-asked-questions)
 
 ---
 
@@ -309,6 +310,76 @@ Mercury includes `.github/workflows/mercury-cron.yml` which pings your Vercel `/
 * **Token Protection:** Tokens are masked both in the UI and across API endpoints (`EAAY••••••••••••••••3zwL`).
 * **Git Safe:** `.env` and `*.db` are strictly excluded from source control.
 * **Meta Data Deletion Compliance:** Includes official Meta-compliant data deletion endpoint at `/privacy`. Commenters can request data purge by sending `DELETE DATA`.
+
+---
+
+## 14. ⚠️ Top 10 Common Mistakes & Pitfalls to Avoid
+
+Setting up Meta Graph API automation for the first time can be tricky because Meta enforces strict security boundaries across Facebook Pages, Instagram Accounts, and Business Apps. Here are the top 10 most common mistakes users make and exactly how to prevent or fix them:
+
+### 1. Generating a Temporary User Token Instead of a System User Token
+* **The Mistake:** Generating a token from the Graph API Explorer while logged into a personal Facebook account.
+* **Why it breaks:** User tokens expire in **1 hour to 60 days**. When they expire, your automations silently halt without error warnings.
+* **The Solution:** Always go to **Meta Business Suite > Business Settings > System Users**, create a System User with Admin privileges, and select **Token Expiration: Never** (see Phase 3).
+
+### 2. Forgetting the "Allow Access to Messages in Inbox" Switch
+* **The Mistake:** Connecting Instagram to your Facebook Page, but leaving message permissions disabled.
+* **Why it breaks:** Meta throws error `(#230) Requires pages_messaging or instagram_manage_messages` whenever Mercury attempts to send a Private Reply or DM, even if your token has all permissions.
+* **The Solution:** Open your Facebook Page on desktop > **Settings** > **Linked Accounts** > **Instagram** > Ensure the toggle **"Allow access to Instagram messages in Inbox"** is explicitly turned **ON**.
+
+### 3. Testing in "Development Mode" with Non-Tester Accounts
+* **The Mistake:** Keeping your Meta App in "Development" mode and asking friends or personal second accounts to test comment triggers.
+* **Why it breaks:** In Development Mode, Meta blocks API communication with all Instagram accounts *except* those explicitly registered as App Developers, Admins, or Testers. DMs to regular users fail with error `(#200) Permissions error`.
+* **The Solution:** 
+  * Either add your test Instagram account under **App Dashboard > App Roles > Roles > Add Instagram Tester** (and accept the invitation on Instagram under Settings > Apps and Websites > Tester Invites).
+  * Or switch your Meta App to **Live Mode** in the App Dashboard top header.
+
+### 4. Swapping `PAGE_ID` and `IG_BUSINESS_ACCOUNT_ID`
+* **The Mistake:** Entering the Facebook Page ID into the Instagram Business Account ID field, or vice versa.
+* **Why it breaks:** 
+  * Meta Private Replies API (`POST /{PAGE_ID}/messages`) strictly expects the numeric ID of your Facebook Page.
+  * Media scanning API (`GET /{IG_ID}/media`) strictly expects the numeric ID of your Instagram Professional account.
+  * Swapping them results in `(#100) Object with ID does not exist` or `Invalid parameter`.
+* **The Solution:** Use Mercury's **"Test Connection"** button in the *Credentials & Tokens* settings tab to verify both IDs in real-time.
+
+### 5. Using a Personal Instagram Account Instead of Professional/Creator
+* **The Mistake:** Attempting to automate a regular personal Instagram profile.
+* **Why it breaks:** Meta's Graph API does not support personal profiles. The account will not link to a Facebook Page, and Meta Business Suite will refuse to generate tokens for it.
+* **The Solution:** In your Instagram mobile app, navigate to **Settings > Account Type and Tools > Switch to Professional Account** (choose **Creator** or **Business**).
+
+### 6. Forgetting to Click "Subscribe" on Webhook Fields
+* **The Mistake:** Completing the Webhook handshake with the verify token, but skipping the field subscriptions.
+* **Why it breaks:** The webhook endpoint verifies with a green checkmark, but Meta never dispatches comment or DM events to Mercury.
+* **The Solution:** Under **Webhooks > Instagram** in Meta App Dashboard, find **`comments`** and **`messages`** in the table and click **Subscribe** on both.
+
+### 7. Relying on Expiring Tunnel URLs (Free Ngrok Sessions)
+* **The Mistake:** Running free ngrok sessions that disconnect after a few hours or generate new randomized URLs upon reboot.
+* **Why it breaks:** When the ngrok URL changes, Meta cannot deliver webhook events, causing webhook failure rates to rise until Meta automatically disables the webhook.
+* **The Solution:**
+  * For local execution with zero port exposure, use Mercury's built-in **Autonomous Local Polling Daemon** (`run_bot.bat` or `python poll_engine.py`) which polls directly over HTTPS without needing any tunnel.
+  * Or use **Cloudflare Tunnel** (`cloudflared`) to get a permanent free custom domain.
+  * Or deploy Mercury to **Vercel** serverless.
+
+### 8. Spamming Identical DM Text and Using Generic URL Shorteners
+* **The Mistake:** Sending identical DM copy without variation hundreds of times per hour, or using spam-flagged URL shorteners (e.g. `bit.ly`, `tinyurl`).
+* **Why it breaks:** Instagram's automated spam filters will temporarily shadow-restrict outbound DMs if they detect automated spam patterns.
+* **The Solution:**
+  * Always interpolate the commenter's name using Mercury's safe tag `{username}` (e.g., `Hey {username}! Here is your link...`).
+  * Utilize Mercury's **Dual-Message Sequence** (`reply_dm_2`) which spaces messages with a human-like delay.
+  * Link directly to your destination website or clean custom domain.
+
+### 9. Misconfiguring the Follow-Gate Flow
+* **The Mistake:** Putting the secret download link inside the initial greeting message when Follow-Gate is enabled.
+* **Why it breaks:** Commenters receive the secret link immediately without ever following your profile!
+* **The Solution:**
+  * In the video automation modal:
+    * **Private DM 1 (`reply_dm`):** Must ONLY contain the prompt to follow (e.g. *"Hey {username}! Please follow @yourhandle first, then reply 'FOLLOWED' here to unlock the link!"*).
+    * **Follow-Gate Unlocked DM (`unlocked_dm`):** This is where you put the secret link! Mercury only dispatches this after verifying the user's follow action.
+
+### 10. Accidentally Committing `.env` or API Tokens to GitHub
+* **The Mistake:** Committing `.env` files or raw tokens to a public git repository.
+* **Why it breaks:** GitHub's automated Secret Scanning algorithms detect Meta tokens instantly and notify Meta. Meta will automatically revoke and invalidate your token within 60 seconds to protect your account.
+* **The Solution:** Keep `.env` strictly in `.gitignore`. Mercury never commits secrets and masks tokens across the dashboard (`EAAY••••••••••••••••3zwL`).
 
 ---
 

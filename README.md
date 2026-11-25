@@ -114,6 +114,19 @@ Mercury allows you to input your credentials directly inside the Dashboard under
 
 ---
 
+## ⚠️ Top Mistakes to Avoid During Setup
+
+Before going live, make sure to avoid these common setup pitfalls:
+* 🔴 **Short-Lived User Tokens:** Don't use Graph API Explorer tokens (they expire in 1–60 days). Always generate a **System User Token** with expiration set to **Never**.
+* 🔴 **Disabled Inbox Access:** In Facebook Page Settings > Linked Accounts > Instagram, toggle **"Allow access to Instagram messages in Inbox"** to **ON**, otherwise Meta blocks outbound DMs.
+* 🔴 **App in Development Mode:** In Dev Mode, Meta only sends DMs to registered **App Testers**. Switch your app to **Live Mode** in the Meta header to message regular followers.
+* 🔴 **Swapped IDs:** `PAGE_ID` is your numeric Facebook Page ID; `IG_BUSINESS_ACCOUNT_ID` is your Instagram account ID. Use Mercury's **Test Connection** button to confirm.
+* 🔴 **Unsubscribed Webhooks:** After entering the verify token, you must explicitly click **Subscribe** on both the **`comments`** and **`messages`** fields in Meta's Webhooks table.
+
+👉 *Read the full detailed breakdown in the [Complete Setup Guide (Top 10 Mistakes & Fixes)](docs/FULL_SETUP_GUIDE.md#14-top-10-common-mistakes--pitfalls-to-avoid).*
+
+---
+
 ## ⚙️ Configuration Reference (`.env.example`)
 
 You can also pre-seed your configuration using environment variables:
